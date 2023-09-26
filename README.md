@@ -2,7 +2,7 @@
 This project is an automated backup to store all the github repostories from an account to an AWS bucket. It's probably a good idea to do the Terraform Tutorial first.
 
 # Step1
-* Create a python script that fetches all the github repositories from a account (both private and public) and zips it. We will need to upload this zipped file to an AWS S3 bucket later. You will need to read the [github public rest api documentation](https://docs.github.com/en/rest) to understand how to fetch this data.
+* Create a local python script that fetches all the github repositories from a account (both private and public), zips it and upload it to an AWS S3 Bucket with [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) package. You will need to read the [github public rest api documentation](https://docs.github.com/en/rest) to understand how to fetch this data from github. Later we will rewrite this script to fit into an AWS Lambda Function.
 
 # Step 2
 * Create an AWS IAM User with full access to s3 buckets and full access to lambda functions (we might need more access later). Generate programatic access keys for this user. We will need this programatic access to configure our Terraform project. 
