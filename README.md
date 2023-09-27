@@ -1,5 +1,5 @@
 # github-backup-to-aws
-This project is an automated backup to store all the github repostories from an account to an AWS bucket. It's probably a good idea to do the Terraform Tutorial first. The architecture looks like this:
+This project is an automated backup to store all the github repostories from an account to an AWS bucket. It's probably a good idea to do the [Terraform Tutorial first](https://developer.hashicorp.com/terraform/tutorials/aws-get-started). The architecture looks like this:
 ![architecture](diagrams/github-backup.png)
 
 # Step 1
