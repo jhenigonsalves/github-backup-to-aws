@@ -41,7 +41,7 @@ def download_repos(token, EXT='zip'):
             print(r.text)
 def main():
     secrets = dotenv_values(".env")
-    access_token = secrets['github_token_7']
+    access_token = secrets['github_token']
     #access_token_30 = secrets['github_token_30']   
     download_repos(access_token)
 
