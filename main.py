@@ -42,7 +42,6 @@ def download_repos(token, EXT='zip'):
 def main():
     secrets = dotenv_values(".env")
     access_token = secrets['github_token']
-    #access_token_30 = secrets['github_token_30']   
     download_repos(access_token)
 
 if __name__ == '__main__':
