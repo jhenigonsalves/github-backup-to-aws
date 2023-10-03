@@ -1,23 +1,25 @@
 import requests
 from dotenv import dotenv_values
+import pathlib
 
-
-def get_metadata(token):
+def get_metadata(token, path_dir):
+        
     my_headers = {'Authorization' : f'Bearer {token}'}
     response = requests.get('https://api.github.com/user/repos', headers=my_headers)
     resp = response.json()
+    file_path = path_dir / 'metadata.txt'
     metadata = [{'name':repo['name'],
                   'full_name':repo['full_name'],
                   'is_private':repo['private']} for repo in resp]
-    with open('repos/metadata.txt', 'w') as f:
+    with open(file_path, 'w') as f:
         for line in metadata:
             f.write(str(line)+'\n')
     return metadata 
 
-def download_repos(token, EXT='zip'):
+def download_repos(token, path_dir, EXT='zip'):
     #EXT  = 'tar'  # it also works
     
-    metadata = get_metadata(token)
+    metadata = get_metadata(token, path_dir)
     headers = {
         "Authorization" : f'token {token}',
         "Accept": 'application/vnd.github.v3+json'
@@ -32,7 +34,8 @@ def download_repos(token, EXT='zip'):
         response = requests.get(url, headers=headers)
         try:
             response.raise_for_status()
-            with open(f'repos/{repo_name}.{EXT}', 'wb') as fh:
+            file_path = path_dir / f'{repo_name}.{EXT}'
+            with open(file_path, 'wb') as fh:
                 fh.write(response.content)
         except requests.exceptions.HTTPError as error_:
             raise error_
@@ -43,7 +46,11 @@ def download_repos(token, EXT='zip'):
 def main():
     secrets = dotenv_values(".env")
     access_token = secrets['github_token']
-    download_repos(access_token)
+    
+    path_dir = pathlib.Path("repos/")
+    path_dir.mkdir(parents=True, exist_ok=True)
+    
+    download_repos(access_token, path_dir)
 
 if __name__ == '__main__':
     main()
