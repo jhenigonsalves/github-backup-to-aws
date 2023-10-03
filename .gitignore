@@ -1,5 +1,6 @@
 #temporary test files
 repos
+*.ipynb
 
 # credentials
 credentials.txt
