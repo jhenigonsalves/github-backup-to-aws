@@ -6,13 +6,13 @@ def get_metadata(token):
     my_headers = {'Authorization' : f'Bearer {token}'}
     response = requests.get('https://api.github.com/user/repos', headers=my_headers)
     resp = response.json()
-    metadados = [{'name':repo['name'],
+    metadata = [{'name':repo['name'],
                   'full_name':repo['full_name'],
                   'is_private':repo['private']} for repo in resp]
-    with open('repos/metadados.txt', 'w') as f:
-        for line in metadados:
+    with open('repos/metadata.txt', 'w') as f:
+        for line in metadata:
             f.write(str(line)+'\n')
-    return metadados 
+    return metadata 
 
 def download_repos(token, EXT='zip'):
     #EXT  = 'tar'  # it also works
