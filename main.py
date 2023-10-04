@@ -1,8 +1,21 @@
+from typing import Dict, List
 import requests
 from dotenv import dotenv_values
 import pathlib
 
 import json
+
+
+def filter_repository_by_owner(
+    owner_name: str,
+    repositories: List[Dict],
+    apply_filter: bool = False,
+) -> List[Dict]:
+    """
+    Receive repositories and filter them by owner_name. Return the subset of repositories filtered.
+    If apply_filter = False, return repositories as is.
+    """
+    pass
 
 
 def get_metadata(token: str, path_dir: pathlib.Path, pages: int = 15) -> list:
