@@ -4,20 +4,41 @@ import pathlib
 import os
 import typing
 
+import json
 
-def get_metadata(token: str, path_dir: typing.Union[str, bytes, os.PathLike]) -> list:
-        
+
+def get_metadata(token: str, 
+                 path_dir: typing.Union[str, bytes, os.PathLike],                  
+                 pages:int = 15
+                ) -> list:
+    session = requests.Session()
+    metadata = []
+    pages=15
+    max_per_page = 100 # Max value accepted by github api
+    
     my_headers = {'Authorization' : f'Bearer {token}'}
-    response = requests.get('https://api.github.com/user/repos', headers=my_headers)
-    resp = response.json()
-    file_path = path_dir / 'metadata.txt'
-    metadata = [{'name':repo['name'],
-                  'owner':repo['full_name'].split('/')[0],
-                  'is_private':repo['private']} for repo in resp]
-    with open(file_path, 'w') as f:
-        for line in metadata:
-            f.write(str(line)+'\n')
+    
+    for page in range(1, pages):   
+        params = {'per_page':max_per_page,
+                  'page':page}
+        response = session.get('https://api.github.com/user/repos', 
+                                headers=my_headers, 
+                                params=params
+                              )
+        resp = response.json()
+        if(len(resp)!=0):
+            aux_metadata = [{'name':repo['name'],
+                            'owner':repo['full_name'].split('/')[0],
+                            'is_private':repo['private']} for repo in resp]
+            metadata = metadata + aux_metadata
+        else:
+            break   
+ 
+    file_path = path_dir / 'metadata.json'
+    with open(file_path,'w') as outfile:
+        json.dump(metadata, outfile)
     return metadata 
+
 
 def download_repos(token: str, dir_name: str='repos/', EXT: str='zip') -> None:
     #EXT  = 'tar'  # it also works
@@ -55,6 +76,7 @@ def create_dir(dir_name: str) -> str:
 def main():
     secrets = dotenv_values(".env")
     access_token = secrets['github_token']
+    
     download_repos(access_token)
 
 if __name__ == '__main__':
