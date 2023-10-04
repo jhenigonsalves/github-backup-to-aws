@@ -12,7 +12,7 @@ def get_metadata(token: str, path_dir: typing.Union[str, bytes, os.PathLike]) ->
     resp = response.json()
     file_path = path_dir / 'metadata.txt'
     metadata = [{'name':repo['name'],
-                  'full_name':repo['full_name'],
+                  'owner':repo['full_name'].split('/')[0],
                   'is_private':repo['private']} for repo in resp]
     with open(file_path, 'w') as f:
         for line in metadata:
@@ -30,14 +30,14 @@ def download_repos(token: str, dir_name: str='repos/', EXT: str='zip') -> None:
     
     REF  = ''      # master/main branch 
     
-    full_names = [repo['full_name'] for repo in metadata]
-    for owner_repo  in full_names:
-        repo_name = owner_repo.split('/')[-1]
-        url = f'https://api.github.com/repos/{owner_repo}/{EXT}ball/{REF}'
+    full_names = [(repo['owner'], repo['name']) for repo in metadata]
+
+    for owner, repo_name  in full_names:
+        url = f'https://api.github.com/repos/{owner}/{repo_name}/{EXT}ball/{REF}'
         response = requests.get(url, headers=headers)
         try:
             response.raise_for_status()
-            file_path = path_dir / f'{repo_name}.{EXT}'
+            file_path = path_dir / f'{owner}_{repo_name}.{EXT}'
             with open(file_path, 'wb') as fh:
                 fh.write(response.content)
         except requests.exceptions.HTTPError as error_:
