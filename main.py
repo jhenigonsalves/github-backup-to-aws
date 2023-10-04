@@ -16,9 +16,9 @@ def get_metadata(token, path_dir):
             f.write(str(line)+'\n')
     return metadata 
 
-def download_repos(token, path_dir, EXT='zip'):
+def download_repos(token, dir_name='repos/', EXT='zip'):
     #EXT  = 'tar'  # it also works
-    
+    path_dir = create_dir(dir_name)
     metadata = get_metadata(token, path_dir)
     headers = {
         "Authorization" : f'token {token}',
@@ -42,15 +42,16 @@ def download_repos(token, path_dir, EXT='zip'):
         except:
             raise NotImplementedError(f"Can't catch this error: {response.status_code}")
 
-
+def create_dir(dir_name):
+    path_dir = pathlib.Path(dir_name)
+    path_dir.mkdir(parents=True, exist_ok=True)
+    return path_dir
+    
+    
 def main():
     secrets = dotenv_values(".env")
     access_token = secrets['github_token']
-    
-    path_dir = pathlib.Path("repos/")
-    path_dir.mkdir(parents=True, exist_ok=True)
-    
-    download_repos(access_token, path_dir)
+    download_repos(access_token)
 
 if __name__ == '__main__':
     main()
