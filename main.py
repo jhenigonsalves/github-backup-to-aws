@@ -30,15 +30,15 @@ def get_metadata(token: str, path_dir: pathlib.Path, pages: int = 15) -> list:
         response = session.get(
             "https://api.github.com/user/repos", headers=my_headers, params=params
         )
-        resp = response.json()
-        if len(resp) != 0:
+        response_json = response.json()
+        if len(response_json) != 0:
             aux_metadata = [
                 {
                     "name": repo["name"],
                     "owner": repo["full_name"].split("/")[0],
                     "is_private": repo["private"],
                 }
-                for repo in resp
+                for repo in response_json
             ]
             metadata = metadata + aux_metadata
         else:
@@ -80,7 +80,6 @@ def download_repos(token: str, dir_name: str = "repos/", EXT: str = "zip") -> No
 def create_dir(dir_name: str) -> str:
     path_dir = pathlib.Path(dir_name)
     path_dir.mkdir(parents=True, exist_ok=True)
-    print(type(path_dir))
     return path_dir
 
 
