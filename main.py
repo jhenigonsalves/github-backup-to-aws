@@ -7,15 +7,23 @@ import json
 
 
 def filter_repository_by_owner(
-    owner_name: str,
     repositories: List[Dict],
+    owner_name: str = None,
     apply_filter: bool = False,
 ) -> List[Dict]:
     """
     Receive repositories and filter them by owner_name. Return the subset of repositories filtered.
     If apply_filter = False, return repositories as is.
     """
-    pass
+    if not owner_name:
+        return repositories
+    elif not apply_filter:
+        return repositories
+    else:
+        repos_filter_by_owner = [
+            repo for repo in repositories if repo["owner"] == owner_name
+        ]
+        return repos_filter_by_owner
 
 
 def get_metadata(token: str, path_dir: pathlib.Path, pages: int = 15) -> list:
