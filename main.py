@@ -21,7 +21,6 @@ def filter_repository_by_owner(
 def get_metadata(token: str, path_dir: pathlib.Path, pages: int = 15) -> list:
     session = requests.Session()
     metadata = []
-    pages = 15
     max_per_page = 100  # Max value accepted by github api
 
     my_headers = {"Authorization": f"Bearer {token}"}
