@@ -10,6 +10,7 @@ This project is an automated backup to store all the github repostories from an 
 
 # Step 2
 * Create a local python script that fetches all the github repositories from a account (both private and public), zips it and upload it to an AWS S3 Bucket with [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) package. You will need to read the [github public rest api documentation](https://docs.github.com/en/rest) to understand how to fetch this data from github. Later we will rewrite this script to fit into an AWS Lambda Function. When calling `boto3` inside your python script, you will need to provide AWS Programatic access keys from a user. **LOAD THOSE CREDENTIALS VIA Environment Variables using [python-dotenv](https://pypi.org/project/python-dotenv/)!!!** Dont EVER commit those credentials to github.
+* To access the GitHub via API you will need a personal token, this [documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) shows how to do it.
 
 
 # Step 3
@@ -39,3 +40,7 @@ This project is an automated backup to store all the github repostories from an 
 
 # Step 8
 * Create a lambda function (python code + infrastructure) and deploy it with terraform through the CI/CD Pipeline using [Github Actions](https://docs.github.com/en/actions).
+* We should have three GitHub Actions in place for this project, which are equivalent to three `.yml` templates:
+  * One `.yml` template that runs a `pytest` `on: pull_request` to branch `master`. 
+  * One `.yml` template that runs a `terraform plan` `on: pull_request` to branch `master`. 
+  * One `.yml` template that runs a `terraform apply` `on: push` to branch `master`. 

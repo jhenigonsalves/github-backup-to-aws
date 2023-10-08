@@ -1,6 +1,10 @@
-#credentials
-credentials.txt
+#temporary test files
+repos
+*.ipynb
 
+# credentials
+credentials.txt
+.env
 # terraform
 .terraform*
 terraform.tfstate*
