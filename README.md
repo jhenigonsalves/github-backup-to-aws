@@ -40,3 +40,7 @@ This project is an automated backup to store all the github repostories from an 
 
 # Step 8
 * Create a lambda function (python code + infrastructure) and deploy it with terraform through the CI/CD Pipeline using [Github Actions](https://docs.github.com/en/actions).
+* We should have three GitHub Actions in place for this project, which are equivalent to three `.yml` templates:
+  * One `.yml` template that runs a `pytest` `on: pull_request` to branch `master`. 
+  * One `.yml` template that runs a `terraform plan` `on: pull_request` to branch `master`. 
+  * One `.yml` template that runs a `terraform apply` `on: push` to branch `master`. 
