@@ -13,6 +13,14 @@ This project is an automated backup to store all the github repostories from an 
 * To access the GitHub via API you will need a personal token, this [documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) shows how to do it.
 
 
+# Step 2.11 
+* Remove your `main` function, it doesnt do anything, it doenst receive any input to do calculations.
+* On your `get_metadata` function, you need to call the `filter_repository_by_owner` function. Note that, because of that, `get_metadata` must receive as input `owner_name`.
+* Now your `download_repos` function also must receive `owner_name` as input.
+* On your `download_repos` function, add the `owner_name` parameter
+* Create a code line to receive the value of `owner_name` as environment variable. If no variable is found, set `owner_name` to None. You can do something like this `owner_name = os.environ.get('owner_name', None)`. You will need this to pass in to the `download_repos` function.
+* Call the function `download_repos` at the end of the script instead of `main()`.
+
 # Step 2.2
 * Once `2.1` is done, refactor your code to write the `.zip` files into an aws s3 bucket using [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) instead of writing the files locally on your machine.
 
