@@ -52,3 +52,10 @@ This project is an automated backup to store all the github repostories from an 
   * One `.yml` template that runs a `pytest` `on: pull_request` to branch `master`. 
   * One `.yml` template that runs a `terraform plan` `on: pull_request` to branch `master`. 
   * One `.yml` template that runs a `terraform apply` `on: push` to branch `master`. 
+
+# Stretch Goal
+
+
+1) Refactor your python functions int a class that implements the Factory Pattern. Take a look at this article about the Factory Pattern, might give you an insight: https://realpython.com/factory-method-python/
+
+1.1) Rewrite all your tests to comply with the new class created on 1)
