@@ -20,6 +20,22 @@ This project is an automated backup to store all the github repostories from an 
 * On your `download_repos` function, add the `owner_name` parameter
 * Create a code line to receive the value of `owner_name` as environment variable. If no variable is found, set `owner_name` to None. You can do something like this `owner_name = os.environ.get('owner_name', None)`. You will need this to pass in to the `download_repos` function.
 * Call the function `download_repos` at the end of the script instead of `main()`.
+* Write test functions for new code always! You will need to use [patch](https://docs.python.org/3/library/unittest.mock.html) soon on new tests. Take a look at this example:
+```python
+from unittest import mock
+from unittest.mock import patch
+from urllib.error import HTTPError
+import pytest
+from ingestion.guru.client import GuruApiClient
+
+@patch("requests.get")
+def test_guru_client_check_for_response_errors(p_get_response):
+    exception = HTTPError(url="", code=404, msg="not found", hdrs=None, fp=None)
+    p_get_response.raise_for_status.side_effect = exception
+    client = GuruApiClient(base_api_endpoint="", secrets_manager="", secret_path="")
+    with pytest.raises(HTTPError):
+        client.check_for_response_errors(response=p_get_response)
+```
 
 # Step 2.2
 * Once `2.1` is done, refactor your code to write the `.zip` files into an aws s3 bucket using [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) instead of writing the files locally on your machine.
