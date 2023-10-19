@@ -2,7 +2,7 @@ from typing import Dict, List
 import requests
 from dotenv import dotenv_values
 import pathlib
-
+import os
 import json
 
 
@@ -95,6 +95,10 @@ def create_dir(dir_name: str) -> str:
     path_dir = pathlib.Path(dir_name)
     path_dir.mkdir(parents=True, exist_ok=True)
     return path_dir
+
+
+def get_owner_name(token: str) -> str:
+    pass
 
 
 secrets = dotenv_values(".env")
