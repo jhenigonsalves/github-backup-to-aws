@@ -102,8 +102,9 @@ def get_owner_name(token: str) -> str:
     pass
 
 
-load_dotenv()
-access_token = os.environ["TOKEN_GITHUB"]
+if __name__ == "__main__":
+    load_dotenv()
+    access_token = os.environ["TOKEN_GITHUB"]
 
-owner_name = "jhenigonsalves"
-download_repos(access_token, owner_name)
+    owner_name = "jhenigonsalves"
+    download_repos(access_token, owner_name)
