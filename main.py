@@ -91,12 +91,7 @@ def create_dir(dir_name: str) -> str:
     return path_dir
 
 
-def main():
-    secrets = dotenv_values(".env")
-    access_token = secrets["github_token"]
+secrets = dotenv_values(".env")
+access_token = secrets["github_token"]
 
-    download_repos(access_token)
-
-
-if __name__ == "__main__":
-    main()
+download_repos(access_token)
