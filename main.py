@@ -26,7 +26,9 @@ def filter_repository_by_owner(
         return repos_filter_by_owner
 
 
-def get_metadata(token: str, path_dir: pathlib.Path, pages: int = 15) -> list:
+def get_metadata(
+    token: str, path_dir: pathlib.Path, owner_name: str = None, pages: int = 15
+) -> list:
     session = requests.Session()
     metadata = []
     max_per_page = 100  # Max value accepted by github api
@@ -52,16 +54,20 @@ def get_metadata(token: str, path_dir: pathlib.Path, pages: int = 15) -> list:
         else:
             break
 
+    metadata = filter_repository_by_owner(metadata, owner_name, apply_filter=True)
+
     file_path = path_dir / "metadata.json"
     with open(file_path, "w") as outfile:
         json.dump(metadata, outfile)
     return metadata
 
 
-def download_repos(token: str, dir_name: str = "repos/", EXT: str = "zip") -> None:
+def download_repos(
+    token: str, owner_name: str = None, dir_name: str = "repos/", EXT: str = "zip"
+) -> None:
     # EXT  = 'tar'  # it also works
     path_dir = create_dir(dir_name)
-    metadata = get_metadata(token, path_dir)
+    metadata = get_metadata(token, path_dir, owner_name)
     headers = {
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",
@@ -94,4 +100,5 @@ def create_dir(dir_name: str) -> str:
 secrets = dotenv_values(".env")
 access_token = secrets["github_token"]
 
-download_repos(access_token)
+owner_name = "jhenigonsalves"
+download_repos(access_token, owner_name)
