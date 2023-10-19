@@ -20,8 +20,12 @@ This project is an automated backup to store all the github repostories from an 
 * [x] On your `get_metadata` function, you need to call the `filter_repository_by_owner` function. Note that, because of that, `get_metadata` must receive as input `owner_name`.
 * [x] Now your `download_repos` function also must receive `owner_name` as input.
 * [x] On your `download_repos` function, add the `owner_name` parameter
-* Create a code line to receive the value of `owner_name` as environment variable. If no variable is found, set `owner_name` to None. You can do something like this `owner_name = os.environ.get('owner_name', None)`. You will need this to pass in to the `download_repos` function.
+`owner_name = os.environ.get('owner_name', None)`. You will need this to pass in to the `download_repos` function.
 * [x] Call the function `download_repos` at the end of the script instead of `main()`.
+
+# Step 2.12
+
+* Create a function that get the user_name of the authenticated GitHub user. The documentation for the endpoint can be found [here](https://docs.github.com/en/free-pro-team@latest/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user)
 * Write test functions for new code always! You will need to use [patch](https://docs.python.org/3/library/unittest.mock.html) soon on new tests. Take a look at this example:
 
 ```python
