@@ -43,6 +43,7 @@ def test_guru_client_check_for_response_errors(p_get_response):
     with pytest.raises(HTTPError):
         client.check_for_response_errors(response=p_get_response)
 ```
+* After that, you can remove the variable `owner_name`, the user will not need to input that. Instead, he will need to input a variable called `filter_owner_repos_only`. If this variable is not `Null`, it will automatically filter the repositories that are owned by the github user.
 
 # Step 2.2
 
