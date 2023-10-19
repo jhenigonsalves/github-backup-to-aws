@@ -1,6 +1,7 @@
 from typing import Dict, List
 import requests
-from dotenv import dotenv_values
+from dotenv import load_dotenv
+
 import pathlib
 import os
 import json
@@ -101,8 +102,8 @@ def get_owner_name(token: str) -> str:
     pass
 
 
-secrets = dotenv_values(".env")
-access_token = secrets["TOKEN_GITHUB"]
+load_dotenv()
+access_token = os.environ["TOKEN_GITHUB"]
 
 owner_name = "jhenigonsalves"
 download_repos(access_token, owner_name)
