@@ -17,9 +17,9 @@ This project is an automated backup to store all the github repostories from an 
 # Step 2.11
 
 * [x] Remove your `main` function, it doesnt do anything, it doenst receive any input to do calculations.
-* On your `get_metadata` function, you need to call the `filter_repository_by_owner` function. Note that, because of that, `get_metadata` must receive as input `owner_name`.
-* Now your `download_repos` function also must receive `owner_name` as input.
-* On your `download_repos` function, add the `owner_name` parameter
+* [x] On your `get_metadata` function, you need to call the `filter_repository_by_owner` function. Note that, because of that, `get_metadata` must receive as input `owner_name`.
+* [x] Now your `download_repos` function also must receive `owner_name` as input.
+* [x] On your `download_repos` function, add the `owner_name` parameter
 * Create a code line to receive the value of `owner_name` as environment variable. If no variable is found, set `owner_name` to None. You can do something like this `owner_name = os.environ.get('owner_name', None)`. You will need this to pass in to the `download_repos` function.
 * [x] Call the function `download_repos` at the end of the script instead of `main()`.
 * Write test functions for new code always! You will need to use [patch](https://docs.python.org/3/library/unittest.mock.html) soon on new tests. Take a look at this example:
