@@ -1,10 +1,14 @@
 from typing import Dict, List
 import requests
 from dotenv import load_dotenv
-
+from ratelimit import limits, sleep_and_retry
 import pathlib
 import os
 import json
+
+# Api Call Restrictions
+period_in_seconds = 60
+calls_per_period = 30
 
 
 def filter_repository_by_owner(
@@ -38,7 +42,7 @@ def get_metadata(
 
     for page in range(1, pages):
         params = {"per_page": max_per_page, "page": page}
-        response = session.get(
+        response = get_url(
             "https://api.github.com/user/repos", headers=my_headers, params=params
         )
         response_json = response.json()
@@ -63,6 +67,15 @@ def get_metadata(
     return metadata
 
 
+@sleep_and_retry
+@limits(calls=calls_per_period, period=period_in_seconds)
+def get_url(url: str, headers: Dict = {}, params: Dict = {}):
+    if params:
+        session = requests.Session()
+        return session.get(url, headers=headers, params=params)
+    return requests.get(url, headers=headers)
+
+
 def download_repos(
     token: str, owner_name: str = None, dir_name: str = "repos/", EXT: str = "zip"
 ) -> None:
@@ -80,7 +93,7 @@ def download_repos(
 
     for owner, repo_name in full_names:
         url = f"https://api.github.com/repos/{owner}/{repo_name}/{EXT}ball/{REF}"
-        response = requests.get(url, headers=headers)
+        response = get_url(url, headers=headers)
         try:
             response.raise_for_status()
             file_path = path_dir / f"{owner}_{repo_name}.{EXT}"
