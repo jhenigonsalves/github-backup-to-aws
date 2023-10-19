@@ -102,7 +102,7 @@ def get_owner_name(token: str) -> str:
 
 
 secrets = dotenv_values(".env")
-access_token = secrets["github_token"]
+access_token = secrets["TOKEN_GITHUB"]
 
 owner_name = "jhenigonsalves"
 download_repos(access_token, owner_name)
