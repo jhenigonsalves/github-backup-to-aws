@@ -25,7 +25,8 @@ This project is an automated backup to store all the github repostories from an 
 
 # Step 2.12
 
-* Create a function that get the user_name of the authenticated GitHub user. The documentation for the endpoint can be found [here](https://docs.github.com/en/free-pro-team@latest/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user)
+* Create a function called `get_owner_name` that gets the user_name of the authenticated GitHub user. The documentation for the endpoint can be found [here](https://docs.github.com/en/free-pro-team@latest/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user)
+* Refactor your code to use the `get_owner_name` function with the following behaviour: Read the environment variable called `BACKUP_ONLY_OWNER_REPOS`, if this variable is not NULL, use `get_owner_name` to get the user name and input that to the `filter_repository_by_owner`. If `BACKUP_ONLY_OWNER_REPOS` is NULL, don't call the `get_owner_name` function and all the downstream calls to the `owner_name` variable will be skipped. Later we will try to fetch the variable `BACKUP_ONLY_OWNER_REPOS` from SecretsManager, if it's not there, we will assume it's null and follow the same flow described. 
 * Write test functions for new code always! You will need to use [patch](https://docs.python.org/3/library/unittest.mock.html) soon on new tests. Take a look at this example:
 
 ```python
