@@ -1,9 +1,14 @@
 from typing import Dict, List
 import requests
-from dotenv import dotenv_values
+from dotenv import load_dotenv
+from ratelimit import limits, sleep_and_retry
 import pathlib
-
+import os
 import json
+
+# Api Call Restrictions
+period_in_seconds = 60
+calls_per_period = 30
 
 
 def filter_repository_by_owner(
@@ -26,7 +31,9 @@ def filter_repository_by_owner(
         return repos_filter_by_owner
 
 
-def get_metadata(token: str, path_dir: pathlib.Path, pages: int = 15) -> list:
+def get_metadata(
+    token: str, path_dir: pathlib.Path, owner_name: str = None, pages: int = 15
+) -> list:
     session = requests.Session()
     metadata = []
     max_per_page = 100  # Max value accepted by github api
@@ -35,7 +42,7 @@ def get_metadata(token: str, path_dir: pathlib.Path, pages: int = 15) -> list:
 
     for page in range(1, pages):
         params = {"per_page": max_per_page, "page": page}
-        response = session.get(
+        response = get_url(
             "https://api.github.com/user/repos", headers=my_headers, params=params
         )
         response_json = response.json()
@@ -52,16 +59,29 @@ def get_metadata(token: str, path_dir: pathlib.Path, pages: int = 15) -> list:
         else:
             break
 
+    metadata = filter_repository_by_owner(metadata, owner_name, apply_filter=True)
+
     file_path = path_dir / "metadata.json"
     with open(file_path, "w") as outfile:
         json.dump(metadata, outfile)
     return metadata
 
 
-def download_repos(token: str, dir_name: str = "repos/", EXT: str = "zip") -> None:
+@sleep_and_retry
+@limits(calls=calls_per_period, period=period_in_seconds)
+def get_url(url: str, headers: Dict = {}, params: Dict = {}):
+    if params:
+        session = requests.Session()
+        return session.get(url, headers=headers, params=params)
+    return requests.get(url, headers=headers)
+
+
+def download_repos(
+    token: str, owner_name: str = None, dir_name: str = "repos/", EXT: str = "zip"
+) -> None:
     # EXT  = 'tar'  # it also works
     path_dir = create_dir(dir_name)
-    metadata = get_metadata(token, path_dir)
+    metadata = get_metadata(token, path_dir, owner_name)
     headers = {
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",
@@ -73,7 +93,7 @@ def download_repos(token: str, dir_name: str = "repos/", EXT: str = "zip") -> No
 
     for owner, repo_name in full_names:
         url = f"https://api.github.com/repos/{owner}/{repo_name}/{EXT}ball/{REF}"
-        response = requests.get(url, headers=headers)
+        response = get_url(url, headers=headers)
         try:
             response.raise_for_status()
             file_path = path_dir / f"{owner}_{repo_name}.{EXT}"
@@ -91,12 +111,13 @@ def create_dir(dir_name: str) -> str:
     return path_dir
 
 
-def main():
-    secrets = dotenv_values(".env")
-    access_token = secrets["github_token"]
-
-    download_repos(access_token)
+def get_owner_name(token: str) -> str:
+    pass
 
 
 if __name__ == "__main__":
-    main()
+    load_dotenv()
+    access_token = os.environ["TOKEN_GITHUB"]
+
+    owner_name = "jhenigonsalves"
+    download_repos(access_token, owner_name)
