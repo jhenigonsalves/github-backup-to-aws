@@ -9,7 +9,17 @@ This project is an automated backup to store all the github repostories from an 
 * Always remember to activate this `venv` before developing your python code for this project.
 * The `venv` folder should live at the root of this github project.
 
+# Step 1.1
+
+* [x] Create a file .env.example that contains the environment variables needed.
+  | Variable | Description |OBS:
+  | :------: | ----------- |:-----: |
+  |TOKEN_GITHUB | Personal token to access user authenticated content from GitHub| [Documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
+  | BACKUP_ONLY_OWNER_REPOS | Define which repos to download. If only the ones that user is owner or colaborator too.|True or False
+
 # Step 2.1 - DONE
+
+ |
 
 * Create a local python script that fetches all the github repositories from a account (both private and public), zips it and upload locally. You will need to read the [github public rest api documentation](https://docs.github.com/en/rest) to understand how to fetch this data from github.
 * To access the GitHub via API you will need a personal token, this [documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) shows how to do it.
