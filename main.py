@@ -111,12 +111,16 @@ def create_dir(dir_name: str) -> str:
 
 
 def get_owner_name(token: str) -> str:
-    pass
+    my_headers = {"Authorization": f"Bearer {token}"}
+    response = get_url("https://api.github.com/user", headers=my_headers)
+    response_json = response.json()
+    username = response_json["login"]
+    return username
 
 
 if __name__ == "__main__":
     load_dotenv()
     access_token = os.environ["TOKEN_GITHUB"]
-
-    owner_name = "jhenigonsalves"
-    download_repos(access_token, owner_name)
+    owner_name = get_owner_name(access_token)
+    print(owner_name)
+    # download_repos(access_token, owner_name)
