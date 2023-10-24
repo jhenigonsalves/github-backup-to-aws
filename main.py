@@ -12,33 +12,36 @@ calls_per_period = 30
 
 
 def filter_repository_by_owner(
-    repositories: List[Dict],
-    owner_name: str = None,
-    apply_filter: bool = False,
+    repositories: List[Dict], backup_only_owner_repos: str = "", token: str = None
 ) -> List[Dict]:
     """
     Receive repositories and filter them by owner_name. Return the subset of repositories filtered.
     If apply_filter = False, return repositories as is.
     """
-    if not owner_name:
+    try:
+        backup_only_owner_repos = eval(backup_only_owner_repos)
+        if backup_only_owner_repos:
+            owner_name = get_owner_name(token)
+            repos_filter_by_owner = [
+                repo for repo in repositories if repo["owner"] == owner_name
+            ]
+            return repos_filter_by_owner
+        else:
+            return repositories
+    except:
         return repositories
-    elif not apply_filter:
-        return repositories
-    else:
-        repos_filter_by_owner = [
-            repo for repo in repositories if repo["owner"] == owner_name
-        ]
-        return repos_filter_by_owner
 
 
 def get_metadata(
-    token: str, path_dir: pathlib.Path, owner_name: str = None, pages: int = 15
+    token: str,
+    path_dir: pathlib.Path,
+    backup_only_owner_repos: str = "",
+    pages: int = 15,
 ) -> list:
     metadata = []
     max_per_page = 100  # Max value accepted by github api
 
     my_headers = {"Authorization": f"Bearer {token}"}
-
     for page in range(1, pages):
         params = {"per_page": max_per_page, "page": page}
         response = get_url(
@@ -58,7 +61,7 @@ def get_metadata(
         else:
             break
 
-    metadata = filter_repository_by_owner(metadata, owner_name, apply_filter=True)
+    metadata = filter_repository_by_owner(metadata, backup_only_owner_repos, token)
 
     file_path = path_dir / "metadata.json"
     with open(file_path, "w") as outfile:
@@ -76,11 +79,15 @@ def get_url(url: str, headers: Dict = {}, params: Dict = {}):
 
 
 def download_repos(
-    token: str, owner_name: str = None, dir_name: str = "repos/", EXT: str = "zip"
+    token: str,
+    backup_only_owner_repos: bool,
+    dir_name: str = "repos/",
+    EXT: str = "zip",
 ) -> None:
     # EXT  = 'tar'  # it also works
+
     path_dir = create_dir(dir_name)
-    metadata = get_metadata(token, path_dir, owner_name)
+    metadata = get_metadata(token, path_dir, backup_only_owner_repos)
     headers = {
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",
@@ -121,6 +128,5 @@ def get_owner_name(token: str) -> str:
 if __name__ == "__main__":
     load_dotenv()
     access_token = os.environ["TOKEN_GITHUB"]
-    owner_name = get_owner_name(access_token)
-    print(owner_name)
-    # download_repos(access_token, owner_name)
+    backup_only_owner_repos = os.environ.get("BACKUP_ONLY_OWNER_REPOS", None)
+    download_repos(access_token, backup_only_owner_repos)
