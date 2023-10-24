@@ -17,6 +17,9 @@ This project is an automated backup to store all the github repostories from an 
   |TOKEN_GITHUB | Personal token to access user authenticated content from GitHub| [Documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
   | BACKUP_ONLY_OWNER_REPOS | Define which repos to download. If only the ones that user is owner or colaborator too.|True or False
 
+About BACKUP_ONLY_OWNER_REPOS, in an if statement almost every variable is considered "Truthy", excepted empty variables, None, False (boolean), and zeros. A lenghty explanation can be found [here](https://stackoverflow.com/questions/39983695/what-is-truthy-and-falsy-how-is-it-different-from-true-and-false) and [here](https://stackoverflow.com/questions/53198902/what-is-the-difference-between-none-and-false-in-python-3-in-a-boolean-sense#:~:text=This%20is%20because%20False%20is,have%20no%20value%20at%20all.)
+But any string is considered True, unless it's a empty one. To `str:"False"` be considered `bool:False`, we needed to use `eval()`. But `eval()` won't work on `None` variables.
+
 # Step 2.1 - DONE
 
  |
@@ -24,7 +27,7 @@ This project is an automated backup to store all the github repostories from an 
 * Create a local python script that fetches all the github repositories from a account (both private and public), zips it and upload locally. You will need to read the [github public rest api documentation](https://docs.github.com/en/rest) to understand how to fetch this data from github.
 * To access the GitHub via API you will need a personal token, this [documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) shows how to do it.
 
-# Step 2.11
+# Step 2.11 - DONE
 
 * [x] Remove your `main` function, it doesnt do anything, it doenst receive any input to do calculations.
 * [x] On your `get_metadata` function, you need to call the `filter_repository_by_owner` function. Note that, because of that, `get_metadata` must receive as input `owner_name`.
@@ -36,7 +39,7 @@ This project is an automated backup to store all the github repostories from an 
 # Step 2.12
 
 * [x] Create a function called `get_owner_name` that gets the user_name of the authenticated GitHub user. The documentation for the endpoint can be found [here](https://docs.github.com/en/free-pro-team@latest/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user)
-* Refactor your code to use the `get_owner_name` function with the following behaviour: Read the environment variable called `BACKUP_ONLY_OWNER_REPOS`, if this variable is not NULL, use `get_owner_name` to get the user name and input that to the `filter_repository_by_owner`. If `BACKUP_ONLY_OWNER_REPOS` is NULL, don't call the `get_owner_name` function and all the downstream calls to the `owner_name` variable will be skipped. Later we will try to fetch the variable `BACKUP_ONLY_OWNER_REPOS` from SecretsManager, if it's not there, we will assume it's null and follow the same flow described.
+* [x] Refactor your code to use the `get_owner_name` function with the following behaviour: Read the environment variable called `BACKUP_ONLY_OWNER_REPOS`, if this variable is not NULL, use `get_owner_name` to get the user name and input that to the `filter_repository_by_owner`. If `BACKUP_ONLY_OWNER_REPOS` is NULL, don't call the `get_owner_name` function and all the downstream calls to the `owner_name` variable will be skipped. Later we will try to fetch the variable `BACKUP_ONLY_OWNER_REPOS` from SecretsManager, if it's not there, we will assume it's null and follow the same flow described.
 * Write test functions for new code always! You will need to use [patch](https://docs.python.org/3/library/unittest.mock.html) soon on new tests. Take a look at this example:
 
 ```python
