@@ -1,8 +1,9 @@
 from unittest.mock import patch, MagicMock
+
 from main import create_dir
 from main import get_owner_name
 from main import filter_repository_by_owner
-import pathlib
+from main import get_url
 
 
 # Run these tests by invoking `$ python3 -m pytest tests`
@@ -102,3 +103,19 @@ def test_filter_repository_by_owner_True(mock_owner_name):
     assert "octocat" in owners
     assert "github_user" not in owners
     mock_owner_name.assert_called_once()
+
+
+@patch("requests.get")
+def test_get_url(mock_requests):
+    mock_url = "foo"
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.ok = True
+    mock_response.url = mock_url
+
+    mock_requests.return_value = mock_response
+    mocked_request = get_url(mock_url)
+    mock_requests.assert_called_once()
+    assert mocked_request.status_code == 200
+    assert mocked_request.url == "foo"
