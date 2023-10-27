@@ -1,6 +1,7 @@
 from unittest.mock import patch, MagicMock
 from main import create_dir
 from main import get_owner_name
+from main import filter_repository_by_owner
 import pathlib
 
 
@@ -69,3 +70,19 @@ def test_get_owner_name(mock_requests):
 
     owner_name = get_owner_name("")
     assert owner_name == "octocat"
+
+
+@patch("main.get_owner_name")
+def test_filter_repository_by_owner_None(mock_owner_name):
+    mock_owner_name.return_value = "octocat"
+    repositories = [
+        {"name": "archive", "owner": "octocat", "is_private": True},
+        {"name": "file", "owner": "github_user", "is_private": True},
+    ]
+    repositories_returned = filter_repository_by_owner(repositories)
+
+    owners = set([dict_["owner"] for dict_ in repositories_returned])
+    assert len(owners) > 1
+    assert "octocat" in owners
+    assert "github_user" in owners
+    mock_owner_name.assert_not_called()
