@@ -70,8 +70,7 @@ def get_metadata(
 @limits(calls=calls_per_period, period=period_in_seconds)
 def get_url(url: str, headers: Dict = {}, params: Dict = {}):
     if params:
-        session = requests.Session()
-        return session.get(url, headers=headers, params=params)
+        return requests.get(url, headers=headers, params=params)
     return requests.get(url, headers=headers)
 
 
