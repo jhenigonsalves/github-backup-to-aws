@@ -5,8 +5,10 @@ from main import get_owner_name
 # Run these tests by invoking `$ python3 -m pytest tests`
 # https://docs.pytest.org/en/6.2.x/usage.html#:~:text=You%20can%20invoke%20testing%20through,the%20current%20directory%20to%20sys.
 @patch("requests.get")
-def test_get_owner_name(mock_response):
-    mock_response.response = {
+def test_get_owner_name(mock_requests):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
         "login": "octocat",
         "id": 1,
         "node_id": "MDQ6VXNlcjE=",
@@ -52,5 +54,9 @@ def test_get_owner_name(mock_response):
             "collaborators": 0,
         },
     }
+
+    # specify the return value of the get() method
+    mock_requests.return_value = mock_response
+
     owner_name = get_owner_name("")
     assert owner_name == "octocat"
