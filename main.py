@@ -12,24 +12,21 @@ calls_per_period = 30
 
 
 def filter_repository_by_owner(
-    repositories: List[Dict], backup_only_owner_repos: str = "", token: str = None
+    repositories: List[Dict],
+    backup_only_owner_repos: str = None,
+    token: str = None,
 ) -> List[Dict]:
     """
     Receive repositories and filter them by owner_name. Return the subset of repositories filtered.
     If apply_filter = False, return repositories as is.
     """
-    try:
-        backup_only_owner_repos = eval(backup_only_owner_repos)
-        if backup_only_owner_repos:
-            owner_name = get_owner_name(token)
-            repos_filter_by_owner = [
-                repo for repo in repositories if repo["owner"] == owner_name
-            ]
-            return repos_filter_by_owner
-        else:
-            return repositories
-    except:
-        return repositories
+    if backup_only_owner_repos:
+        owner_name = get_owner_name(token)
+        repos_filter_by_owner = [
+            repo for repo in repositories if repo["owner"] == owner_name
+        ]
+        return repos_filter_by_owner
+    return repositories
 
 
 def get_metadata(
