@@ -71,7 +71,7 @@ def test_get_owner_name(mock_requests):
 
 
 @patch("main.get_owner_name")
-def test_filter_repository_by_owner_None(mock_owner_name):
+def test_filter_repository_by_owner_false(mock_owner_name):
     mock_owner_name.return_value = "octocat"
     repositories = [
         {"name": "archive", "owner": "octocat", "is_private": True},
@@ -87,7 +87,7 @@ def test_filter_repository_by_owner_None(mock_owner_name):
 
 
 @patch("main.get_owner_name")
-def test_filter_repository_by_owner_True(mock_owner_name):
+def test_filter_repository_by_owner_true(mock_owner_name):
     mock_owner_name.return_value = "octocat"
     repositories = [
         {"name": "archive", "owner": "octocat", "is_private": True},
