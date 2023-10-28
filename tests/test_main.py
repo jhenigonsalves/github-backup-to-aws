@@ -1,18 +1,15 @@
 from unittest.mock import patch, MagicMock
 
-from main import create_dir
-from main import get_owner_name
-from main import filter_repository_by_owner
-from main import get_url
+from main import create_dir, get_owner_name, filter_repository_by_owner, get_url
 
 
 # Run these tests by invoking `$ python3 -m pytest tests`
 # https://docs.pytest.org/en/6.2.x/usage.html#:~:text=You%20can%20invoke%20testing%20through,the%20current%20directory%20to%20sys.
 @patch("pathlib.Path.mkdir", autospec=True)
-def test_create_dir(pathlib_path):
-    pathlib_path.return_value = True
+def test_create_dir(pathlib_mkdir):
+    pathlib_mkdir.return_value = True
     create_dir("tmpdir")
-    pathlib_path.assert_called_once()
+    pathlib_mkdir.assert_called_once()
 
 
 @patch("requests.get")
@@ -80,7 +77,7 @@ def test_filter_repository_by_owner_None(mock_owner_name):
         {"name": "archive", "owner": "octocat", "is_private": True},
         {"name": "file", "owner": "github_user", "is_private": True},
     ]
-    repositories_returned = filter_repository_by_owner(repositories)
+    repositories_returned = filter_repository_by_owner(repositories, "false")
 
     owners = set([dict_["owner"] for dict_ in repositories_returned])
     assert len(owners) > 1
