@@ -1,18 +1,15 @@
 from unittest.mock import patch, MagicMock
 
-from main import create_dir
-from main import get_owner_name
-from main import filter_repository_by_owner
-from main import get_url
+from main import create_dir, get_owner_name, filter_repository_by_owner, get_url
 
 
 # Run these tests by invoking `$ python3 -m pytest tests`
 # https://docs.pytest.org/en/6.2.x/usage.html#:~:text=You%20can%20invoke%20testing%20through,the%20current%20directory%20to%20sys.
 @patch("pathlib.Path.mkdir", autospec=True)
-def test_create_dir(pathlib_path):
-    pathlib_path.return_value = True
+def test_create_dir(pathlib_mkdir):
+    pathlib_mkdir.return_value = True
     create_dir("tmpdir")
-    pathlib_path.assert_called_once()
+    pathlib_mkdir.assert_called_once()
 
 
 @patch("requests.get")
@@ -74,13 +71,13 @@ def test_get_owner_name(mock_requests):
 
 
 @patch("main.get_owner_name")
-def test_filter_repository_by_owner_None(mock_owner_name):
+def test_filter_repository_by_owner_false(mock_owner_name):
     mock_owner_name.return_value = "octocat"
     repositories = [
         {"name": "archive", "owner": "octocat", "is_private": True},
         {"name": "file", "owner": "github_user", "is_private": True},
     ]
-    repositories_returned = filter_repository_by_owner(repositories)
+    repositories_returned = filter_repository_by_owner(repositories, "false")
 
     owners = set([dict_["owner"] for dict_ in repositories_returned])
     assert len(owners) > 1
@@ -90,7 +87,7 @@ def test_filter_repository_by_owner_None(mock_owner_name):
 
 
 @patch("main.get_owner_name")
-def test_filter_repository_by_owner_True(mock_owner_name):
+def test_filter_repository_by_owner_true(mock_owner_name):
     mock_owner_name.return_value = "octocat"
     repositories = [
         {"name": "archive", "owner": "octocat", "is_private": True},
@@ -106,7 +103,7 @@ def test_filter_repository_by_owner_True(mock_owner_name):
 
 
 @patch("requests.get")
-def test_get_url(mock_requests):
+def test_get_url(mock_requests_get):
     mock_url = "foo"
 
     mock_response = MagicMock()
@@ -114,8 +111,26 @@ def test_get_url(mock_requests):
     mock_response.ok = True
     mock_response.url = mock_url
 
-    mock_requests.return_value = mock_response
+    mock_requests_get.return_value = mock_response
     mocked_request = get_url(mock_url)
-    mock_requests.assert_called_once()
+    mock_requests_get.assert_called_once()
+    assert mocked_request.status_code == 200
+    assert mocked_request.url == "foo"
+
+
+@patch("requests.get")
+def test_get_url_with_params(mock_requests_get):
+    mock_url = "foo"
+    mock_headers = {"foo": "bar"}
+    mock_params = {"foo": "bar"}
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.ok = True
+    mock_response.url = "foo"
+
+    mock_requests_get.return_value = mock_response
+    mocked_request = get_url(url=mock_url, headers=mock_headers, params=mock_params)
+    mock_requests_get.assert_called_once()
     assert mocked_request.status_code == 200
     assert mocked_request.url == "foo"
