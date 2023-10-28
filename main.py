@@ -11,15 +11,28 @@ period_in_seconds = 60
 calls_per_period = 30
 
 
+def turn_bool_string_to_bool(str_: str) -> bool:
+    """_summary_
+
+    Args:
+        str_ (str): string that looks like a bool, e.g. 'false'
+
+    Returns:
+        bool
+    """
+    return eval(str_.title())
+
+
 def filter_repository_by_owner(
     repositories: List[Dict],
-    backup_only_owner_repos: str = None,
+    backup_only_owner_repos: str,
     token: str = None,
 ) -> List[Dict]:
     """
     Receive repositories and filter them by owner_name. Return the subset of repositories filtered.
     If apply_filter = False, return repositories as is.
     """
+    backup_only_owner_repos = turn_bool_string_to_bool(backup_only_owner_repos)
     if backup_only_owner_repos:
         owner_name = get_owner_name(token)
         repos_filter_by_owner = [
@@ -124,5 +137,5 @@ def get_owner_name(token: str) -> str:
 if __name__ == "__main__":
     load_dotenv()
     access_token = os.environ["TOKEN_GITHUB"]
-    backup_only_owner_repos = os.environ.get("BACKUP_ONLY_OWNER_REPOS", None)
+    backup_only_owner_repos = os.environ.get("BACKUP_ONLY_OWNER_REPOS", "False")
     download_repos(access_token, backup_only_owner_repos)
