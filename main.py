@@ -45,7 +45,7 @@ def filter_repository_by_owner(
 def get_metadata(
     token: str,
     path_dir: pathlib.Path,
-    backup_only_owner_repos: str = "",
+    backup_only_owner_repos: str,
     pages: int = 15,
 ) -> list:
     metadata = []
@@ -73,10 +73,14 @@ def get_metadata(
 
     metadata = filter_repository_by_owner(metadata, backup_only_owner_repos, token)
 
+    write_json(metadata, path_dir)
+    return metadata
+
+
+def write_json(data: Dict, path_dir: pathlib.Path):
     file_path = path_dir / "metadata.json"
     with open(file_path, "w") as outfile:
-        json.dump(metadata, outfile)
-    return metadata
+        json.dump(data, outfile)
 
 
 @sleep_and_retry
