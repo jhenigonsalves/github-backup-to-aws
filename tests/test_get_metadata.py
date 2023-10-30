@@ -294,3 +294,22 @@ def test_is_get_metadata_executing_for_loop_at_least_once(
     get_metadata("foo_token", foo_path, "false")
 
     mock_requests_get.assert_called_once()
+
+
+@patch("main.write_json")
+@patch("main.get_url")
+@patch("main.filter_repository_by_owner")
+def test_is_get_metadata_for_loop_breaking_when_response_json_is_empty(
+    mock_repositories, mock_requests_get, mock_write_json
+):
+    mock_response = MagicMock()
+    mock_response.json.return_value = []
+    mock_requests_get.return_value = mock_response
+
+    mock_repositories.return_value = None
+    mock_write_json.return_value = None
+
+    foo_path = pathlib.Path("foo_path")
+    get_metadata("foo_token", foo_path, "false")
+
+    assert mock_requests_get.call_count == 1
