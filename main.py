@@ -83,41 +83,6 @@ def get_metadata(
     return metadata
 
 
-def get_metadata2(
-    token: str,
-    path_dir: pathlib.Path,
-    backup_only_owner_repos: str,
-    pages: int = 15,
-) -> list:
-    metadata = []
-    max_per_page = 100  # Max value accepted by github api
-
-    my_headers = {"Authorization": f"Bearer {token}"}
-    for page in range(1, pages):
-        params = {"per_page": max_per_page, "page": page}
-        response = get_url(
-            "https://api.github.com/user/repos", headers=my_headers, params=params
-        )
-        response_json = response.json()
-        if len(response_json) != 0:
-            aux_metadata = [
-                {
-                    "name": repo["name"],
-                    "owner": repo["full_name"].split("/")[0],
-                    "is_private": repo["private"],
-                }
-                for repo in response_json
-            ]
-            metadata = metadata + aux_metadata
-        else:
-            break
-
-    metadata = filter_repository_by_owner(metadata, backup_only_owner_repos, token)
-
-    write_json(metadata, path_dir)
-    return metadata
-
-
 def write_json(data: Dict, path_dir: pathlib.Path):
     file_path = path_dir / "metadata.json"
     with open(file_path, "w") as outfile:
