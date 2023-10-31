@@ -46,6 +46,47 @@ def get_metadata(
     token: str,
     path_dir: pathlib.Path,
     backup_only_owner_repos: str,
+) -> list:
+    metadata = []
+    max_per_page = 100  # Max value accepted by github api
+
+    my_headers = {"Authorization": f"Bearer {token}"}
+
+    page = 1
+    params = {"per_page": max_per_page, "page": page}
+    response = get_url(
+        "https://api.github.com/user/repos", headers=my_headers, params=params
+    )
+    response_json = response.json()
+
+    while len(response_json):
+        aux_metadata = [
+            {
+                "name": repo["name"],
+                "owner": repo["full_name"].split("/")[0],
+                "is_private": repo["private"],
+            }
+            for repo in response_json
+        ]
+        metadata = metadata + aux_metadata
+
+        page = page + 1
+        params = {"per_page": max_per_page, "page": page}
+        response = get_url(
+            "https://api.github.com/user/repos", headers=my_headers, params=params
+        )
+        response_json = response.json()
+
+    metadata = filter_repository_by_owner(metadata, backup_only_owner_repos, token)
+
+    write_json(metadata, path_dir)
+    return metadata
+
+
+def get_metadata2(
+    token: str,
+    path_dir: pathlib.Path,
+    backup_only_owner_repos: str,
     pages: int = 15,
 ) -> list:
     metadata = []
