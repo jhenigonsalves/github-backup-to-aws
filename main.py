@@ -11,77 +11,102 @@ period_in_seconds = 60
 calls_per_period = 30
 
 
+def turn_bool_string_to_bool(str_: str) -> bool:
+    """_summary_
+
+    Args:
+        str_ (str): string that looks like a bool, e.g. 'false'
+
+    Returns:
+        bool
+    """
+    return eval(str_.title())
+
+
 def filter_repository_by_owner(
     repositories: List[Dict],
-    owner_name: str = None,
-    apply_filter: bool = False,
+    backup_only_owner_repos: str,
+    token: str = None,
 ) -> List[Dict]:
     """
     Receive repositories and filter them by owner_name. Return the subset of repositories filtered.
     If apply_filter = False, return repositories as is.
     """
-    if not owner_name:
-        return repositories
-    elif not apply_filter:
-        return repositories
-    else:
+    backup_only_owner_repos = turn_bool_string_to_bool(backup_only_owner_repos)
+    if backup_only_owner_repos:
+        owner_name = get_owner_name(token)
         repos_filter_by_owner = [
             repo for repo in repositories if repo["owner"] == owner_name
         ]
         return repos_filter_by_owner
+    return repositories
 
 
 def get_metadata(
-    token: str, path_dir: pathlib.Path, owner_name: str = None, pages: int = 15
+    token: str,
+    path_dir: pathlib.Path,
+    backup_only_owner_repos: str,
 ) -> list:
-    session = requests.Session()
     metadata = []
     max_per_page = 100  # Max value accepted by github api
 
     my_headers = {"Authorization": f"Bearer {token}"}
 
-    for page in range(1, pages):
+    page = 1
+    params = {"per_page": max_per_page, "page": page}
+    response = get_url(
+        "https://api.github.com/user/repos", headers=my_headers, params=params
+    )
+    response_json = response.json()
+
+    while len(response_json):
+        aux_metadata = [
+            {
+                "name": repo["name"],
+                "owner": repo["full_name"].split("/")[0],
+                "is_private": repo["private"],
+            }
+            for repo in response_json
+        ]
+        metadata = metadata + aux_metadata
+
+        page = page + 1
         params = {"per_page": max_per_page, "page": page}
         response = get_url(
             "https://api.github.com/user/repos", headers=my_headers, params=params
         )
         response_json = response.json()
-        if len(response_json) != 0:
-            aux_metadata = [
-                {
-                    "name": repo["name"],
-                    "owner": repo["full_name"].split("/")[0],
-                    "is_private": repo["private"],
-                }
-                for repo in response_json
-            ]
-            metadata = metadata + aux_metadata
-        else:
-            break
 
-    metadata = filter_repository_by_owner(metadata, owner_name, apply_filter=True)
+    metadata = filter_repository_by_owner(metadata, backup_only_owner_repos, token)
 
+    write_json(metadata, path_dir)
+    return metadata
+
+
+def write_json(data: Dict, path_dir: pathlib.Path):
     file_path = path_dir / "metadata.json"
     with open(file_path, "w") as outfile:
-        json.dump(metadata, outfile)
-    return metadata
+        json.dump(data, outfile)
 
 
 @sleep_and_retry
 @limits(calls=calls_per_period, period=period_in_seconds)
 def get_url(url: str, headers: Dict = {}, params: Dict = {}):
     if params:
-        session = requests.Session()
-        return session.get(url, headers=headers, params=params)
+        return requests.get(url, headers=headers, params=params)
     return requests.get(url, headers=headers)
 
 
 def download_repos(
-    token: str, owner_name: str = None, dir_name: str = "repos/", EXT: str = "zip"
+    token: str,
+    backup_only_owner_repos: bool,
+    dir_name: str = "repos/",
+    EXT: str = "zip",
 ) -> None:
     # EXT  = 'tar'  # it also works
+
     path_dir = create_dir(dir_name)
-    metadata = get_metadata(token, path_dir, owner_name)
+    metadata = get_metadata(token, path_dir, backup_only_owner_repos)
     headers = {
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",
@@ -112,12 +137,15 @@ def create_dir(dir_name: str) -> str:
 
 
 def get_owner_name(token: str) -> str:
-    pass
+    my_headers = {"Authorization": f"Bearer {token}"}
+    response = get_url("https://api.github.com/user", headers=my_headers)
+    response_json = response.json()
+    username = response_json["login"]
+    return username
 
 
 if __name__ == "__main__":
     load_dotenv()
     access_token = os.environ["TOKEN_GITHUB"]
-
-    owner_name = "jhenigonsalves"
-    download_repos(access_token, owner_name)
+    backup_only_owner_repos = os.environ.get("BACKUP_ONLY_OWNER_REPOS", "False")
+    download_repos(access_token, backup_only_owner_repos)
