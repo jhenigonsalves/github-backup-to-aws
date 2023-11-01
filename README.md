@@ -40,7 +40,7 @@ But any string is considered True, unless it's a empty one. To `str:"False"` be 
 
 * [x] Create a function called `get_owner_name` that gets the user_name of the authenticated GitHub user. The documentation for the endpoint can be found [here](https://docs.github.com/en/free-pro-team@latest/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user)
 * [x] Refactor your code to use the `get_owner_name` function with the following behaviour: Read the environment variable called `BACKUP_ONLY_OWNER_REPOS`, if this variable is not NULL, use `get_owner_name` to get the user name and input that to the `filter_repository_by_owner`. If `BACKUP_ONLY_OWNER_REPOS` is NULL, don't call the `get_owner_name` function and all the downstream calls to the `owner_name` variable will be skipped. Later we will try to fetch the variable `BACKUP_ONLY_OWNER_REPOS` from SecretsManager, if it's not there, we will assume it's null and follow the same flow described.
-* Write test functions for new code always! You will need to use [patch](https://docs.python.org/3/library/unittest.mock.html) soon on new tests. Take a look at this example:
+*[x] Write test functions for new code always! You will need to use [patch](https://docs.python.org/3/library/unittest.mock.html) soon on new tests. Take a look at this example:
 
 ```python
 from unittest import mock
@@ -58,7 +58,7 @@ def test_guru_client_check_for_response_errors(p_get_response):
         client.check_for_response_errors(response=p_get_response)
 ```
 
-* After that, you can remove the variable `owner_name`, the user will not need to input that. Instead, he will need to input a variable called `filter_owner_repos_only`. If this variable is not `Null`, it will automatically filter the repositories that are owned by the github user.
+* [x] After that, you can remove the variable `owner_name`, the user will not need to input that. Instead, he will need to input a variable called `filter_owner_repos_only`. If this variable is not `Null`, it will automatically filter the repositories that are owned by the github user.
 
 # Step 2.2
 
