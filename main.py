@@ -89,6 +89,11 @@ def write_json(data: Dict, path_dir: pathlib.Path):
         json.dump(data, outfile)
 
 
+def write_repo(repos: bytes, file_path: pathlib.Path):
+    with open(file_path, "wb") as fh:
+        fh.write(repos)
+
+
 @sleep_and_retry
 @limits(calls=calls_per_period, period=period_in_seconds)
 def get_url(url: str, headers: Dict = {}, params: Dict = {}):
@@ -122,8 +127,7 @@ def download_repos(
         try:
             response.raise_for_status()
             file_path = path_dir / f"{owner}_{repo_name}.{EXT}"
-            with open(file_path, "wb") as fh:
-                fh.write(response.content)
+            write_repo(repos=response.content, file_path=file_path)
         except requests.exceptions.HTTPError as error_:
             raise error_
         except:
