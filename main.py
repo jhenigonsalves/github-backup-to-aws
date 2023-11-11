@@ -5,6 +5,8 @@ from ratelimit import limits, sleep_and_retry
 import pathlib
 import os
 import json
+from datetime import date
+import boto3
 
 # Api Call Restrictions
 period_in_seconds = 60
@@ -89,9 +91,49 @@ def write_json(data: Dict, path_dir: pathlib.Path):
         json.dump(data, outfile)
 
 
-def write_repo(repos: bytes, file_path: pathlib.Path):
+def write_repo(
+    repos: bytes,
+    path_dir: pathlib.Path,
+    owner: str,
+    repo_name: str,
+    EXT: str,
+):
+    file_path = path_dir / f"{owner}_{repo_name}.{EXT}"
     with open(file_path, "wb") as fh:
         fh.write(repos)
+
+
+def get_current_date_formatted() -> str:
+    today = date.today()
+    today_formatted = today.strftime("%Y-%m-%d")
+    today_str = str(today_formatted)
+    return today_str
+
+
+def get_prefix(bucket_prefix: str) -> str:
+    date_prefix = get_current_date_formatted()
+    prefix_str = f"{bucket_prefix}/{date_prefix}"
+    return prefix_str
+
+
+def write_repo_s3(
+    repos: bytes,
+    owner: str,
+    repo_name: str,
+    EXT: str,
+    bucket_prefix: str,
+):
+    prefix = get_prefix(bucket_prefix)
+    object_name = f"{prefix}/{owner}_{repo_name}.{EXT}"
+    bucket_name = os.environ["BACKUP_S3_BUCKET"]
+
+    session = boto3.Session(
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+    )
+
+    s3 = session.resource("s3")
+    s3.Bucket(bucket_name).put_object(Key=object_name, Body=repos)
 
 
 @sleep_and_retry
@@ -105,6 +147,7 @@ def get_url(url: str, headers: Dict = {}, params: Dict = {}):
 def download_repos(
     token: str,
     backup_only_owner_repos: bool,
+    bucket_prefix: str,
     dir_name: str = "repos/",
     EXT: str = "zip",
 ) -> None:
@@ -126,8 +169,9 @@ def download_repos(
         response = get_url(url, headers=headers)
         try:
             response.raise_for_status()
-            file_path = path_dir / f"{owner}_{repo_name}.{EXT}"
-            write_repo(repos=response.content, file_path=file_path)
+            response_content = response.content
+            # write_repo(response_content, path_dir, owner, repo_name, EXT)
+            write_repo_s3(response_content, owner, repo_name, EXT, bucket_prefix)
         except requests.exceptions.HTTPError as error_:
             raise error_
         except:
@@ -151,5 +195,7 @@ def get_owner_name(token: str) -> str:
 if __name__ == "__main__":
     load_dotenv()
     access_token = os.environ["TOKEN_GITHUB"]
+    bucket_prefix = os.environ["BACKUP_S3_PREFIX"]  # passar como parametro
+
     backup_only_owner_repos = os.environ.get("BACKUP_ONLY_OWNER_REPOS", "False")
-    download_repos(access_token, backup_only_owner_repos)
+    download_repos(access_token, backup_only_owner_repos, bucket_prefix)
