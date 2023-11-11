@@ -14,6 +14,7 @@ def test_get_current_date_format1(mock_datetime_date):
     mocked_date = get_current_date_formatted()
 
     assert mocked_date == "2012-12-10"
+    mock_datetime_date.today.assert_called_once()
 
 
 @patch("main.date")
@@ -23,6 +24,7 @@ def test_get_current_date_format2(mock_datetime_date):
     mocked_date = get_current_date_formatted()
 
     assert mocked_date == "2012-12-10"
+    mock_datetime_date.today.assert_called_once()
 
 
 @patch("main.date")
@@ -34,3 +36,4 @@ def test_get_current_date_format3(mock_datetime_date):
     mocked_date = get_current_date_formatted()
 
     assert mocked_date == "2012-12-10"
+    mock_datetime_date.today.assert_called_once()
