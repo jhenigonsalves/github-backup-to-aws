@@ -91,6 +91,18 @@ def write_json(data: Dict, path_dir: pathlib.Path):
         json.dump(data, outfile)
 
 
+def write_repo(
+    repos: bytes,
+    path_dir: pathlib.Path,
+    owner: str,
+    repo_name: str,
+    EXT: str,
+):
+    file_path = path_dir / f"{owner}_{repo_name}.{EXT}"
+    with open(file_path, "wb") as fh:
+        fh.write(repos)
+
+
 def get_current_date_formatted() -> str:
     today = date.today()
     today_formatted = today.strftime("%Y-%m-%d")
@@ -110,10 +122,10 @@ def write_repo_s3(
     repo_name: str,
     EXT: str,
     bucket_prefix: str,
-    bucket_name: str,
 ):
     prefix = get_prefix(bucket_prefix)
     object_name = f"{prefix}/{owner}_{repo_name}.{EXT}"
+    bucket_name = os.environ["BACKUP_S3_BUCKET"]
 
     session = boto3.Session(
         aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
@@ -136,7 +148,7 @@ def download_repos(
     token: str,
     backup_only_owner_repos: str,
     bucket_prefix: str,
-    bucket_name: str,
+    dir_name: str = "repos/",
     EXT: str = "zip",
 ) -> None:
     # EXT  = 'tar'  # it also works
@@ -158,14 +170,8 @@ def download_repos(
         try:
             response.raise_for_status()
             response_content = response.content
-            write_repo_s3(
-                response_content,
-                owner,
-                repo_name,
-                EXT,
-                bucket_prefix,
-                bucket_name,
-            )
+            # write_repo(response_content, path_dir, owner, repo_name, EXT)
+            write_repo_s3(response_content, owner, repo_name, EXT, bucket_prefix)
         except requests.exceptions.HTTPError as error_:
             raise error_
         except:
@@ -189,8 +195,7 @@ def get_owner_name(token: str) -> str:
 if __name__ == "__main__":
     load_dotenv()
     access_token = os.environ["TOKEN_GITHUB"]
-    bucket_prefix = os.environ["BACKUP_S3_PREFIX"]
-    bucket_name = os.environ["BACKUP_S3_BUCKET"]
+    bucket_prefix = os.environ["BACKUP_S3_PREFIX"]  # passar como parametro
 
     backup_only_owner_repos = os.environ.get("BACKUP_ONLY_OWNER_REPOS", "False")
-    download_repos(access_token, backup_only_owner_repos, bucket_prefix, bucket_name)
+    download_repos(access_token, backup_only_owner_repos, bucket_prefix)
