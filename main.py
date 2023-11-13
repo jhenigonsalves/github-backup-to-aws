@@ -2,7 +2,6 @@ from typing import Dict, List
 import requests
 from dotenv import load_dotenv
 from ratelimit import limits, sleep_and_retry
-import pathlib
 import os
 import json
 from datetime import date
@@ -104,18 +103,6 @@ def write_metadata_in_s3_bucket(
     s3.Bucket(bucket_name).put_object(Key=object_name, Body=metadata_json)
 
 
-def write_repo(
-    repos: bytes,
-    path_dir: pathlib.Path,
-    owner: str,
-    repo_name: str,
-    EXT: str,
-):
-    file_path = path_dir / f"{owner}_{repo_name}.{EXT}"
-    with open(file_path, "wb") as fh:
-        fh.write(repos)
-
-
 def get_current_date_formatted() -> str:
     today = date.today()
     today_formatted = today.strftime("%Y-%m-%d")
@@ -199,12 +186,6 @@ def download_repos(
             raise error_
         except:
             raise NotImplementedError(f"Can't catch this error: {response.status_code}")
-
-
-def create_dir(dir_name: str) -> str:
-    path_dir = pathlib.Path(dir_name)
-    path_dir.mkdir(parents=True, exist_ok=True)
-    return path_dir
 
 
 def get_owner_name(token: str) -> str:
