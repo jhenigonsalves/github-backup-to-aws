@@ -146,7 +146,7 @@ def get_url(url: str, headers: Dict = {}, params: Dict = {}):
 
 def download_repos(
     token: str,
-    backup_only_owner_repos: bool,
+    backup_only_owner_repos: str,
     bucket_prefix: str,
     dir_name: str = "repos/",
     EXT: str = "zip",
