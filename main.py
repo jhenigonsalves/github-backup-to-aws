@@ -48,6 +48,7 @@ def get_metadata(
     backup_only_owner_repos: str,
     bucket_prefix: str,
     bucket_name: str,
+    boto3_session: boto3.Session,
 ) -> List[Dict]:
     metadata = []
     max_per_page = 100  # Max value accepted by github api
@@ -80,9 +81,13 @@ def get_metadata(
         response_json = response.json()
 
     metadata = filter_repository_by_owner(metadata, backup_only_owner_repos, token)
-
     metadata_json = json.dumps(metadata)
-    write_metadata_in_s3_bucket(metadata_json, bucket_prefix, bucket_name)
+    write_metadata_in_s3_bucket(
+        metadata_json,
+        bucket_prefix,
+        bucket_name,
+        boto3_session,
+    )
     return metadata
 
 
@@ -90,16 +95,11 @@ def write_metadata_in_s3_bucket(
     metadata_json: json,
     bucket_prefix: str,
     bucket_name: str,
+    boto3_session: boto3.Session,
 ):
     prefix = get_prefix(bucket_prefix)
     object_name = f"{prefix}/metadata.json"
-
-    session = boto3.Session(
-        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
-    )
-
-    s3 = session.resource("s3")
+    s3 = boto3_session.resource("s3")
     s3.Bucket(bucket_name).put_object(Key=object_name, Body=metadata_json)
 
 
@@ -120,19 +120,15 @@ def write_repo_s3(
     repos: bytes,
     owner: str,
     repo_name: str,
-    EXT: str,
+    ext: str,
     bucket_prefix: str,
     bucket_name: str,
+    boto3_session: boto3.Session,
 ):
     prefix = get_prefix(bucket_prefix)
-    object_name = f"{prefix}/{owner}_{repo_name}.{EXT}"
+    object_name = f"{prefix}/{owner}_{repo_name}.{ext}"
 
-    session = boto3.Session(
-        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
-    )
-
-    s3 = session.resource("s3")
+    s3 = boto3_session.resource("s3")
     s3.Bucket(bucket_name).put_object(Key=object_name, Body=repos)
 
 
@@ -149,27 +145,29 @@ def download_repos(
     backup_only_owner_repos: str,
     bucket_prefix: str,
     bucket_name: str,
-    EXT: str = "zip",
+    ext: str = "zip",
+    ref: str = "",
 ) -> None:
-    # EXT  = 'tar'  # it also works
-
+    boto3_session = boto3.Session(
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+    )
     metadata = get_metadata(
         token,
         backup_only_owner_repos,
         bucket_prefix,
         bucket_name,
+        boto3_session,
     )
     headers = {
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",
     }
 
-    REF = ""  # master/main branch
-
     full_names = [(repo["owner"], repo["name"]) for repo in metadata]
 
     for owner, repo_name in full_names:
-        url = f"https://api.github.com/repos/{owner}/{repo_name}/{EXT}ball/{REF}"
+        url = f"https://api.github.com/repos/{owner}/{repo_name}/{ext}ball/{ref}"
         response = get_url(url, headers=headers)
         try:
             response.raise_for_status()
@@ -178,9 +176,10 @@ def download_repos(
                 response_content,
                 owner,
                 repo_name,
-                EXT,
+                ext,
                 bucket_prefix,
                 bucket_name,
+                boto3_session,
             )
         except requests.exceptions.HTTPError as error_:
             raise error_
