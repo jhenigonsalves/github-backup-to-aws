@@ -1,6 +1,6 @@
 from unittest.mock import patch, MagicMock
 
-from main import create_dir, get_owner_name, filter_repository_by_owner, get_url
+from main import get_url
 
 
 # Run these tests by invoking `$ python3 -m pytest tests`
