@@ -200,6 +200,6 @@ if __name__ == "__main__":
     access_token = os.environ["TOKEN_GITHUB"]
     bucket_prefix = os.environ["BACKUP_S3_PREFIX"]
     bucket_name = os.environ["BACKUP_S3_BUCKET"]
-
     backup_only_owner_repos = os.environ.get("BACKUP_ONLY_OWNER_REPOS", "False")
+
     download_repos(access_token, backup_only_owner_repos, bucket_prefix, bucket_name)
