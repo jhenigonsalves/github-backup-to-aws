@@ -148,10 +148,7 @@ def download_repos(
     ext: str = "zip",
     ref: str = "",
 ) -> None:
-    boto3_session = boto3.Session(
-        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
-    )
+    boto3_session = boto3.Session()
     metadata = get_metadata(
         token,
         backup_only_owner_repos,
