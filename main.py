@@ -2,9 +2,10 @@ from typing import Dict, List
 import requests
 from dotenv import load_dotenv
 from ratelimit import limits, sleep_and_retry
-import pathlib
 import os
 import json
+from datetime import date
+import boto3
 
 # Api Call Restrictions
 period_in_seconds = 60
@@ -44,9 +45,11 @@ def filter_repository_by_owner(
 
 def get_metadata(
     token: str,
-    path_dir: pathlib.Path,
     backup_only_owner_repos: str,
-) -> list:
+    bucket_prefix: str,
+    bucket_name: str,
+    boto3_session: boto3.Session,
+) -> List[Dict]:
     metadata = []
     max_per_page = 100  # Max value accepted by github api
 
@@ -78,15 +81,55 @@ def get_metadata(
         response_json = response.json()
 
     metadata = filter_repository_by_owner(metadata, backup_only_owner_repos, token)
-
-    write_json(metadata, path_dir)
+    metadata_json = json.dumps(metadata)
+    write_metadata_backup_file_to_s3(
+        metadata_json,
+        bucket_prefix,
+        bucket_name,
+        boto3_session,
+    )
     return metadata
 
 
-def write_json(data: Dict, path_dir: pathlib.Path):
-    file_path = path_dir / "metadata.json"
-    with open(file_path, "w") as outfile:
-        json.dump(data, outfile)
+def write_metadata_backup_file_to_s3(
+    metadata_json: json,
+    bucket_prefix: str,
+    bucket_name: str,
+    boto3_session: boto3.Session,
+):
+    prefix = get_prefix(bucket_prefix)
+    object_name = f"{prefix}/metadata.json"
+    s3 = boto3_session.resource("s3")
+    s3.Bucket(bucket_name).put_object(Key=object_name, Body=metadata_json)
+
+
+def get_current_date_formatted() -> str:
+    today = date.today()
+    today_formatted = today.strftime("%Y-%m-%d")
+    today_str = str(today_formatted)
+    return today_str
+
+
+def get_prefix(bucket_prefix: str) -> str:
+    date_prefix = get_current_date_formatted()
+    prefix_str = f"{bucket_prefix}/{date_prefix}"
+    return prefix_str
+
+
+def write_repository_zip_backup_to_s3(
+    repos: bytes,
+    owner: str,
+    repo_name: str,
+    ext: str,
+    bucket_prefix: str,
+    bucket_name: str,
+    boto3_session: boto3.Session,
+):
+    prefix = get_prefix(bucket_prefix)
+    object_name = f"{prefix}/{owner}_{repo_name}.{ext}"
+
+    s3 = boto3_session.resource("s3")
+    s3.Bucket(bucket_name).put_object(Key=object_name, Body=repos)
 
 
 @sleep_and_retry
@@ -99,41 +142,46 @@ def get_url(url: str, headers: Dict = {}, params: Dict = {}):
 
 def download_repos(
     token: str,
-    backup_only_owner_repos: bool,
-    dir_name: str = "repos/",
-    EXT: str = "zip",
+    backup_only_owner_repos: str,
+    bucket_prefix: str,
+    bucket_name: str,
+    ext: str = "zip",
+    ref: str = "",
 ) -> None:
-    # EXT  = 'tar'  # it also works
-
-    path_dir = create_dir(dir_name)
-    metadata = get_metadata(token, path_dir, backup_only_owner_repos)
+    boto3_session = boto3.Session()
+    metadata = get_metadata(
+        token,
+        backup_only_owner_repos,
+        bucket_prefix,
+        bucket_name,
+        boto3_session,
+    )
     headers = {
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",
     }
 
-    REF = ""  # master/main branch
-
     full_names = [(repo["owner"], repo["name"]) for repo in metadata]
 
     for owner, repo_name in full_names:
-        url = f"https://api.github.com/repos/{owner}/{repo_name}/{EXT}ball/{REF}"
+        url = f"https://api.github.com/repos/{owner}/{repo_name}/{ext}ball/{ref}"
         response = get_url(url, headers=headers)
         try:
             response.raise_for_status()
-            file_path = path_dir / f"{owner}_{repo_name}.{EXT}"
-            with open(file_path, "wb") as fh:
-                fh.write(response.content)
+            response_content = response.content
+            write_repository_zip_backup_to_s3(
+                response_content,
+                owner,
+                repo_name,
+                ext,
+                bucket_prefix,
+                bucket_name,
+                boto3_session,
+            )
         except requests.exceptions.HTTPError as error_:
             raise error_
         except:
             raise NotImplementedError(f"Can't catch this error: {response.status_code}")
-
-
-def create_dir(dir_name: str) -> str:
-    path_dir = pathlib.Path(dir_name)
-    path_dir.mkdir(parents=True, exist_ok=True)
-    return path_dir
 
 
 def get_owner_name(token: str) -> str:
@@ -147,5 +195,8 @@ def get_owner_name(token: str) -> str:
 if __name__ == "__main__":
     load_dotenv()
     access_token = os.environ["TOKEN_GITHUB"]
+    bucket_prefix = os.environ["BACKUP_S3_PREFIX"]
+    bucket_name = os.environ["BACKUP_S3_BUCKET"]
     backup_only_owner_repos = os.environ.get("BACKUP_ONLY_OWNER_REPOS", "False")
-    download_repos(access_token, backup_only_owner_repos)
+
+    download_repos(access_token, backup_only_owner_repos, bucket_prefix, bucket_name)

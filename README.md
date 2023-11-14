@@ -15,10 +15,9 @@ This project is an automated backup to store all the github repostories from an 
   | Variable | Description |OBS:
   | :------: | ----------- |:-----: |
   |TOKEN_GITHUB | Personal token to access user authenticated content from GitHub| [Documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
-  | BACKUP_ONLY_OWNER_REPOS | Define which repos to download. If only the ones that user is owner or colaborator too.|True or False
-
-About BACKUP_ONLY_OWNER_REPOS, in an if statement almost every variable is considered "Truthy", excepted empty variables, None, False (boolean), and zeros. A lenghty explanation can be found [here](https://stackoverflow.com/questions/39983695/what-is-truthy-and-falsy-how-is-it-different-from-true-and-false) and [here](https://stackoverflow.com/questions/53198902/what-is-the-difference-between-none-and-false-in-python-3-in-a-boolean-sense#:~:text=This%20is%20because%20False%20is,have%20no%20value%20at%20all.)
-But any string is considered True, unless it's a empty one. To `str:"False"` be considered `bool:False`, we needed to use `eval()`. But `eval()` won't work on `None` variables.
+  | BACKUP_ONLY_OWNER_REPOS | Define which repos to download. If only the ones that user is owner or colaborator too.|True \| False
+  | BACKUP_S3_BUCKET | S3 bucket name |
+  | BACKUP_S3_PREFIX | the name of the prefix inside the bucket where you should put the files | 'my-prefix'
 
 # Step 2.1 - DONE
 
@@ -36,7 +35,7 @@ But any string is considered True, unless it's a empty one. To `str:"False"` be 
 `owner_name = os.environ.get('owner_name', None)`. You will need this to pass in to the `download_repos` function.
 * [x] Call the function `download_repos` at the end of the script instead of `main()`.
 
-# Step 2.12
+# Step 2.12 - DONE
 
 * [x] Create a function called `get_owner_name` that gets the user_name of the authenticated GitHub user. The documentation for the endpoint can be found [here](https://docs.github.com/en/free-pro-team@latest/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user)
 * [x] Refactor your code to use the `get_owner_name` function with the following behaviour: Read the environment variable called `BACKUP_ONLY_OWNER_REPOS`, if this variable is not NULL, use `get_owner_name` to get the user name and input that to the `filter_repository_by_owner`. If `BACKUP_ONLY_OWNER_REPOS` is NULL, don't call the `get_owner_name` function and all the downstream calls to the `owner_name` variable will be skipped. Later we will try to fetch the variable `BACKUP_ONLY_OWNER_REPOS` from SecretsManager, if it's not there, we will assume it's null and follow the same flow described.
@@ -60,9 +59,12 @@ def test_guru_client_check_for_response_errors(p_get_response):
 
 * [x] After that, you can remove the variable `owner_name`, the user will not need to input that. Instead, he will need to input a variable called `filter_owner_repos_only`. If this variable is not `Null`, it will automatically filter the repositories that are owned by the github user.
 
-# Step 2.2
+# Step 2.2 - DONE
 
-* Once `2.1` is done, refactor your code to write the `.zip` files into an aws s3 bucket using [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html) instead of writing the files locally on your machine. You will probably need to use the [put_object method](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/put_object.html) or anything else that allows you to programatically put objects on a S3 bucket. Create two more environment variables that the user should pass in, `BACKUP_S3_BUCKET` and `BACKUP_S3_PREFIX`. The first one is the name of the bucket where you will tell boto3 to upload files, the second variable is the name of the prefix inside the bucket where you should  put the files. As an example, lets say you want to upload a file called `file1.zip` on a bucket called `my-awsome-bucket-01` with prefix `myprefix`, the file will be uploaded as `my-awsome-bucket-01/myprefix/file1.zip`. The objects uploaded to the bucket will need to be preceeded by a prefix of the current date in format `YYYY-MM-DD`. So going back to the example, lets say I want to upload two files, `f1.zip` and `f2.zip` on a bucket called `my-awsome-bucket-01` with prefix `myprefix`, the result objects should then be `my-awsome-bucket-01/myprefix/2023-11-01/f1.zip` and `my-awsome-bucket-01/myprefix/2023-11-01/f2.zip`. Remove all necessary code logic/functions in place to achieve this goal, as well as fixing the tests that will break along the way!
+* [x] Once `2.1` is done, refactor your code to write the `.zip` files into an aws s3 bucket using [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html) instead of writing the files locally on your machine. You will probably need to use the [put_object method](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/put_object.html) or anything else that allows you to programatically put objects on a S3 bucket.
+* [x] Create two more environment variables that the user should pass in, `BACKUP_S3_BUCKET` and `BACKUP_S3_PREFIX`.
+  * The first one is the name of the bucket where you will tell boto3 to upload files, the second variable is the name of the prefix inside the bucket where you should  put the files. As an example, lets say you want to upload a file called `file1.zip` on a bucket called `my-awsome-bucket-01` with prefix `myprefix`, the file will be uploaded as `my-awsome-bucket-01/myprefix/file1.zip`.
+* [x] The objects uploaded to the bucket will need to be preceeded by a prefix of the current date in format `YYYY-MM-DD`. So going back to the example, lets say I want to upload two files, `f1.zip` and `f2.zip` on a bucket called `my-awsome-bucket-01` with prefix `myprefix`, the result objects should then be `my-awsome-bucket-01/myprefix/2023-11-01/f1.zip` and `my-awsome-bucket-01/myprefix/2023-11-01/f2.zip`. Remove all necessary code logic/functions in place to achieve this goal, as well as fixing the tests that will break along the way!
 
 # Step 2.3
 
