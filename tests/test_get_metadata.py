@@ -1,8 +1,6 @@
-import pathlib
 from unittest.mock import patch, MagicMock
 
 from main import get_metadata
-import pytest
 
 # Run these tests by invoking `$ python3 -m pytest tests`
 # https://docs.pytest.org/en/6.2.x/usage.html#:~:text=You%20can%20invoke%20testing%20through,the%20current%20directory%20to%20sys.
@@ -30,6 +28,7 @@ def test_is_get_metadata_not_executing_while_loop_if_response_empty(
         "false",
         "foo_prefix",
         "foo_bucket_name",
+        "patch_boto3_session",
     )
 
     mock_requests_get.assert_called_once()
@@ -77,6 +76,7 @@ def test_is_get_metadata_while_loop_executing(
         "false",
         "foo_prefix",
         "foo_bucket_name",
+        "patch_boto3_session",
     )
     assert mock_requests_get.call_count == 3
 
@@ -103,6 +103,7 @@ def test_is_get_metadata_calling_filter_repository_by_owner(
         "false",
         "foo_prefix",
         "foo_bucket_name",
+        "patch_boto3_session",
     )
 
     mock_repositories.assert_called_once()
@@ -149,6 +150,7 @@ def test_is_get_metadata_returning_a_list_of_dicts(
         "false",
         "foo_prefix",
         "foo_bucket_name",
+        "patch_boto3_session",
     )
 
     assert mock_requests_get.call_count == 3
