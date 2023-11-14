@@ -48,7 +48,7 @@ def get_metadata(
     backup_only_owner_repos: str,
     bucket_prefix: str,
     bucket_name: str,
-) -> list:
+) -> List[Dict]:
     metadata = []
     max_per_page = 100  # Max value accepted by github api
 
