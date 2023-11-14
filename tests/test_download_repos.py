@@ -9,15 +9,15 @@ from main import download_repos
 # https://docs.pytest.org/en/6.2.x/usage.html#:~:text=You%20can%20invoke%20testing%20through,the%20current%20directory%20to%20sys.
 @patch("main.get_metadata")
 @patch("main.get_url")
-@patch("main.write_repo_s3")
+@patch("main.write_repository_zip_backup_to_s3")
 def test_download_repos_empty_metadata(
-    mock_write_repo_s3,
+    mock_write_repository_zip_backup_to_s3,
     mock_get_url,
     mock_metadata,
 ):
     mock_metadata.return_value = []
     mock_get_url.return_value = None
-    mock_write_repo_s3.return_value = None
+    mock_write_repository_zip_backup_to_s3.return_value = None
 
     download_repos(
         "foo_token",
@@ -29,7 +29,7 @@ def test_download_repos_empty_metadata(
 
     mock_metadata.assert_called_once()
     mock_get_url.call_count == 0
-    mock_write_repo_s3.call_count == 0
+    mock_write_repository_zip_backup_to_s3.call_count == 0
 
 
 @patch("main.get_metadata")
@@ -59,9 +59,9 @@ def test_download_repos_raise_http_error(patch_get_url, p_get_metadata):
 
 @patch("main.get_metadata")
 @patch("main.get_url")
-@patch("main.write_repo_s3")
+@patch("main.write_repository_zip_backup_to_s3")
 def test_download_repos_raise_not_implemented_error(
-    mock_write_repo_s3,
+    mock_write_repository_zip_backup_to_s3,
     mock_get_url,
     mock_metadata,
 ):
@@ -69,7 +69,7 @@ def test_download_repos_raise_not_implemented_error(
         {"name": "archive", "owner": "octocat", "is_private": True},
     ]
 
-    mock_write_repo_s3.return_value = None
+    mock_write_repository_zip_backup_to_s3.return_value = None
 
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -86,14 +86,14 @@ def test_download_repos_raise_not_implemented_error(
 
     mock_metadata.assert_called_once()
     mock_get_url.call_count == 1
-    mock_write_repo_s3.call_count == 0
+    mock_write_repository_zip_backup_to_s3.call_count == 0
 
 
 @patch("main.get_metadata")
 @patch("main.get_url")
-@patch("main.write_repo_s3")
+@patch("main.write_repository_zip_backup_to_s3")
 def test_download_repos_succes(
-    mock_write_repo_s3,
+    mock_write_repository_zip_backup_to_s3,
     mock_get_url,
     mock_metadata,
 ):
@@ -106,7 +106,7 @@ def test_download_repos_succes(
     mock_response.status_code = 302
     mock_response.json.return_value = None
     mock_get_url.return_value = mock_response
-    mock_write_repo_s3.return_value = None
+    mock_write_repository_zip_backup_to_s3.return_value = None
 
     download_repos(
         "foo_token",
@@ -118,4 +118,4 @@ def test_download_repos_succes(
 
     mock_metadata.assert_called_once()
     mock_get_url.call_count == 2
-    mock_write_repo_s3.call_count == 2
+    mock_write_repository_zip_backup_to_s3.call_count == 2

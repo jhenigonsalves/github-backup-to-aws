@@ -82,7 +82,7 @@ def get_metadata(
 
     metadata = filter_repository_by_owner(metadata, backup_only_owner_repos, token)
     metadata_json = json.dumps(metadata)
-    write_metadata_in_s3_bucket(
+    write_metadata_backup_file_to_s3(
         metadata_json,
         bucket_prefix,
         bucket_name,
@@ -91,7 +91,7 @@ def get_metadata(
     return metadata
 
 
-def write_metadata_in_s3_bucket(
+def write_metadata_backup_file_to_s3(
     metadata_json: json,
     bucket_prefix: str,
     bucket_name: str,
@@ -116,7 +116,7 @@ def get_prefix(bucket_prefix: str) -> str:
     return prefix_str
 
 
-def write_repo_s3(
+def write_repository_zip_backup_to_s3(
     repos: bytes,
     owner: str,
     repo_name: str,
@@ -172,7 +172,7 @@ def download_repos(
         try:
             response.raise_for_status()
             response_content = response.content
-            write_repo_s3(
+            write_repository_zip_backup_to_s3(
                 response_content,
                 owner,
                 repo_name,

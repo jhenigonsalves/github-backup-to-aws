@@ -9,7 +9,7 @@ from main import get_metadata
 @patch("main.get_url")
 @patch("main.filter_repository_by_owner")
 @patch("json.dumps")
-@patch("main.write_metadata_in_s3_bucket")
+@patch("main.write_metadata_backup_file_to_s3")
 def test_is_get_metadata_not_executing_while_loop_if_response_empty(
     mock_repositories,
     mock_requests_get,
@@ -36,7 +36,7 @@ def test_is_get_metadata_not_executing_while_loop_if_response_empty(
 
 @patch("main.get_url")
 @patch("json.dumps")
-@patch("main.write_metadata_in_s3_bucket")
+@patch("main.write_metadata_backup_file_to_s3")
 def test_is_get_metadata_while_loop_executing(
     mock_write_metadata,
     mock_json_dumps,
@@ -84,7 +84,7 @@ def test_is_get_metadata_while_loop_executing(
 @patch("main.get_url")
 @patch("main.filter_repository_by_owner")
 @patch("json.dumps")
-@patch("main.write_metadata_in_s3_bucket")
+@patch("main.write_metadata_backup_file_to_s3")
 def test_is_get_metadata_calling_filter_repository_by_owner(
     mock_write_metadata,
     mock_json_dumps,
@@ -111,9 +111,9 @@ def test_is_get_metadata_calling_filter_repository_by_owner(
 
 @patch("main.get_url")
 @patch("json.dumps")
-@patch("main.write_metadata_in_s3_bucket")
+@patch("main.write_metadata_backup_file_to_s3")
 def test_is_get_metadata_returning_a_list_of_dicts(
-    mock_write_metadata_in_s3_bucket,
+    mock_write_metadata_backup_file_to_s3,
     mock_json_dumps,
     mock_requests_get,
 ):
@@ -143,7 +143,7 @@ def test_is_get_metadata_returning_a_list_of_dicts(
     mock3.json.return_value = side_effect_3
     mock_requests_get.side_effect = [mock1, mock2, mock3]
     mock_json_dumps.return_value = None
-    mock_write_metadata_in_s3_bucket.return_value = None
+    mock_write_metadata_backup_file_to_s3.return_value = None
 
     mocked_metadata = get_metadata(
         "foo_token",
