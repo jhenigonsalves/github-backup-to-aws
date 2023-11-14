@@ -59,12 +59,21 @@ def test_guru_client_check_for_response_errors(p_get_response):
 
 * [x] After that, you can remove the variable `owner_name`, the user will not need to input that. Instead, he will need to input a variable called `filter_owner_repos_only`. If this variable is not `Null`, it will automatically filter the repositories that are owned by the github user.
 
-# Step 2.2 - DONE
+# Step 2.21 - DONE
 
 * [x] Once `2.1` is done, refactor your code to write the `.zip` files into an aws s3 bucket using [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html) instead of writing the files locally on your machine. You will probably need to use the [put_object method](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/put_object.html) or anything else that allows you to programatically put objects on a S3 bucket.
 * [x] Create two more environment variables that the user should pass in, `BACKUP_S3_BUCKET` and `BACKUP_S3_PREFIX`.
   * The first one is the name of the bucket where you will tell boto3 to upload files, the second variable is the name of the prefix inside the bucket where you should  put the files. As an example, lets say you want to upload a file called `file1.zip` on a bucket called `my-awsome-bucket-01` with prefix `myprefix`, the file will be uploaded as `my-awsome-bucket-01/myprefix/file1.zip`.
 * [x] The objects uploaded to the bucket will need to be preceeded by a prefix of the current date in format `YYYY-MM-DD`. So going back to the example, lets say I want to upload two files, `f1.zip` and `f2.zip` on a bucket called `my-awsome-bucket-01` with prefix `myprefix`, the result objects should then be `my-awsome-bucket-01/myprefix/2023-11-01/f1.zip` and `my-awsome-bucket-01/myprefix/2023-11-01/f2.zip`. Remove all necessary code logic/functions in place to achieve this goal, as well as fixing the tests that will break along the way!
+
+# Step 2.22
+* Once `Step 2.21` is done, you will refactor your code to use [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/). Instead of passing in values as environment variables, we will use boto3 to call `"secretsmanager"` and fetch the secret strings we need to pass in to the `download_repos` function. All variables we are currently reading through `os.environ` will instead be fetched by boto3 to a secret in secrets manager. Before that, you will need to go to your AWS Account and create a Secret there with the values. An example of a call to Secrets Manager using boto3 follows:
+```python
+import boto3
+
+client = boto3.session.Session().client(service_name="secretsmanager", region_name=region_name)
+get_secret_value_response = self.client.get_secret_value(SecretId=secret_name)
+```
 
 # Step 2.3
 
