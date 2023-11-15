@@ -6,7 +6,6 @@ import os
 import json
 from datetime import date
 import boto3
-from botocore.exceptions import ClientError
 
 # Api Call Restrictions
 period_in_seconds = 60
@@ -146,10 +145,10 @@ def download_repos(
     backup_only_owner_repos: str,
     bucket_prefix: str,
     bucket_name: str,
-    boto3_session: boto3.Session,
     ext: str = "zip",
     ref: str = "",
 ) -> None:
+    boto3_session = boto3.Session()
     metadata = get_metadata(
         token,
         backup_only_owner_repos,
@@ -193,42 +192,11 @@ def get_owner_name(token: str) -> str:
     return username
 
 
-def get_secret(
-    session: boto3.Session,
-    secret_name: str,
-) -> str:
-    region_name = "us-east-1"
-    # Create a Secrets Manager client
-    client = session.client(
-        service_name="secretsmanager",
-        region_name=region_name,
-    )
-
-    try:
-        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
-        # Decrypts secret using the associated KMS key.
-        secret_string = get_secret_value_response["SecretString"]
-        secret_dict = eval(secret_string)
-        secret = secret_dict[secret_name]
-        return secret
-    except ClientError as e:
-        # For a list of exceptions thrown, see
-        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-        raise e
-
-
 if __name__ == "__main__":
     load_dotenv()
-    boto3_session = boto3.Session()
-    access_token = get_secret(boto3_session, "TOKEN_GITHUB")
-    bucket_prefix = get_secret(boto3_session, "BACKUP_S3_PREFIX")
-    bucket_name = get_secret(boto3_session, "BACKUP_S3_BUCKET")
-    backup_only_owner_repos = get_secret(boto3_session, "BACKUP_ONLY_OWNER_REPOS")
+    access_token = os.environ["TOKEN_GITHUB"]
+    bucket_prefix = os.environ["BACKUP_S3_PREFIX"]
+    bucket_name = os.environ["BACKUP_S3_BUCKET"]
+    backup_only_owner_repos = os.environ.get("BACKUP_ONLY_OWNER_REPOS", "False")
 
-    download_repos(
-        access_token,
-        backup_only_owner_repos,
-        bucket_prefix,
-        bucket_name,
-        boto3_session,
-    )
+    download_repos(access_token, backup_only_owner_repos, bucket_prefix, bucket_name)
