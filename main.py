@@ -194,7 +194,7 @@ def get_owner_name(token: str) -> str:
 def get_secret(
     session: boto3.Session,
     secret_name: str,
-) -> str:
+) -> Dict:
     region_name = "us-east-1"
     # Create a Secrets Manager client
     client = session.client(
@@ -204,11 +204,9 @@ def get_secret(
 
     try:
         get_secret_value_response = client.get_secret_value(SecretId=secret_name)
-        # Decrypts secret using the associated KMS key.
         secret_string = get_secret_value_response["SecretString"]
         secret_dict = eval(secret_string)
-        secret = secret_dict[secret_name]
-        return secret
+        return secret_dict
     except ClientError as e:
         # For a list of exceptions thrown, see
         # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
@@ -217,10 +215,11 @@ def get_secret(
 
 if __name__ == "__main__":
     boto3_session = boto3.Session()
-    access_token = get_secret(boto3_session, "TOKEN_GITHUB")
-    bucket_prefix = get_secret(boto3_session, "BACKUP_S3_PREFIX")
-    bucket_name = get_secret(boto3_session, "BACKUP_S3_BUCKET")
-    backup_only_owner_repos = get_secret(boto3_session, "BACKUP_ONLY_OWNER_REPOS")
+    secret_dict = get_secret(boto3_session, "prod/github-backup")
+    access_token = secret_dict["TOKEN_GITHUB"]
+    bucket_prefix = secret_dict["BACKUP_S3_PREFIX"]
+    bucket_name = secret_dict["BACKUP_S3_BUCKET"]
+    backup_only_owner_repos = secret_dict["BACKUP_ONLY_OWNER_REPOS"]
 
     download_repos(
         access_token,
