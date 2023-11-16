@@ -1,8 +1,6 @@
 from typing import Dict, List
 import requests
-from dotenv import load_dotenv
 from ratelimit import limits, sleep_and_retry
-import os
 import json
 from datetime import date
 import boto3
@@ -218,7 +216,6 @@ def get_secret(
 
 
 if __name__ == "__main__":
-    load_dotenv()
     boto3_session = boto3.Session()
     access_token = get_secret(boto3_session, "TOKEN_GITHUB")
     bucket_prefix = get_secret(boto3_session, "BACKUP_S3_PREFIX")
