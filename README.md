@@ -77,11 +77,16 @@ get_secret_value_response = self.client.get_secret_value(SecretId=secret_name)
 
 # Step 2.3
 
-* Once `2.2` is Done, create a lambda function on AWS Console with that logic and test it to see if it works.
+* Once `2.2` is Done, create a lambda function on AWS Console with that logic and test it to see if it works. The Lambda needs an [IAM Role](https://docs.aws.amazon.com/lambda/latest/dg/lambda-intro-execution-role.html) to run. After making it work, erase the lambda and the IAM Role created.
 
 # Step 2.4
 
-* Once `2.3` is Done, Create that lambda using Terraform. (Create the Lambda Role using Teraform too). Ask Terraform to read a Secret on Secrets manager and pass those values to the lambda as Environment Variables.
+* Once `2.3` is Done, you are going to recreate all the pieces of infrastructure necessary for this project via Terraform. You project MUST have the following terraform resources defined:
+ * One [aws_s3_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) to store the backups.
+  * One [aws_lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) to run the code of your python script. [This example](https://github.com/wesleyjr01/starday-data-lake/blob/master/aws-data-lake/modules/lambda/copy/main.tf) might help you.
+  * One [aws_cloudwatch_log_group] to log your lambda runtime.
+  * One [aws_scheduler_schedule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/scheduler_schedule) as a Cron-based scheduler to run your lambda Once a Month.
+  * One [aws_iam_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) as the Lambda Execution Role. [This example](https://github.com/wesleyjr01/starday-data-lake/blob/master/aws-data-lake/modules/lambda/copy/iam.tf) might help you.
 
 # Step 3 - DONE/NOT_NECESSARY
 

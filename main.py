@@ -1,11 +1,10 @@
 from typing import Dict, List
 import requests
-from dotenv import load_dotenv
 from ratelimit import limits, sleep_and_retry
-import os
 import json
 from datetime import date
 import boto3
+from botocore.exceptions import ClientError
 
 # Api Call Restrictions
 period_in_seconds = 60
@@ -145,10 +144,10 @@ def download_repos(
     backup_only_owner_repos: str,
     bucket_prefix: str,
     bucket_name: str,
+    boto3_session: boto3.Session,
     ext: str = "zip",
     ref: str = "",
 ) -> None:
-    boto3_session = boto3.Session()
     metadata = get_metadata(
         token,
         backup_only_owner_repos,
@@ -192,11 +191,40 @@ def get_owner_name(token: str) -> str:
     return username
 
 
-if __name__ == "__main__":
-    load_dotenv()
-    access_token = os.environ["TOKEN_GITHUB"]
-    bucket_prefix = os.environ["BACKUP_S3_PREFIX"]
-    bucket_name = os.environ["BACKUP_S3_BUCKET"]
-    backup_only_owner_repos = os.environ.get("BACKUP_ONLY_OWNER_REPOS", "False")
+def get_secret(
+    session: boto3.Session,
+    secret_name: str,
+) -> Dict:
+    region_name = "us-east-1"
+    # Create a Secrets Manager client
+    client = session.client(
+        service_name="secretsmanager",
+        region_name=region_name,
+    )
 
-    download_repos(access_token, backup_only_owner_repos, bucket_prefix, bucket_name)
+    try:
+        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+        secret_string = get_secret_value_response["SecretString"]
+        secret_dict = eval(secret_string)
+        return secret_dict
+    except ClientError as e:
+        # For a list of exceptions thrown, see
+        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+        raise e
+
+
+if __name__ == "__main__":
+    boto3_session = boto3.Session()
+    secret_dict = get_secret(boto3_session, "prod/github-backup")
+    access_token = secret_dict["TOKEN_GITHUB"]
+    bucket_prefix = secret_dict["BACKUP_S3_PREFIX"]
+    bucket_name = secret_dict["BACKUP_S3_BUCKET"]
+    backup_only_owner_repos = secret_dict["BACKUP_ONLY_OWNER_REPOS"]
+
+    download_repos(
+        access_token,
+        backup_only_owner_repos,
+        bucket_prefix,
+        bucket_name,
+        boto3_session,
+    )

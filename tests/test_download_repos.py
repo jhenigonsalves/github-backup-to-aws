@@ -24,7 +24,7 @@ def test_download_repos_empty_metadata(
         "foo_bool",
         "foo_prefix",
         "foo_bucket_name",
-        "foo_EXT",
+        "foo_boto3",
     )
 
     mock_metadata.assert_called_once()
@@ -54,6 +54,7 @@ def test_download_repos_raise_http_error(patch_get_url, p_get_metadata):
             backup_only_owner_repos="true",
             bucket_prefix="",
             bucket_name="",
+            boto3_session="",
         )
 
 
@@ -82,6 +83,7 @@ def test_download_repos_raise_not_implemented_error(
             backup_only_owner_repos="true",
             bucket_prefix="",
             bucket_name="",
+            boto3_session="",
         )
 
     mock_metadata.assert_called_once()
@@ -113,7 +115,7 @@ def test_download_repos_succes(
         "foo_bool",
         "foo_prefix",
         "foo_bucket_name",
-        "foo_EXT",
+        "foo_boto",
     )
 
     mock_metadata.assert_called_once()
