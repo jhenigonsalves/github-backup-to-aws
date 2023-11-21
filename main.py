@@ -8,8 +8,22 @@ from botocore.exceptions import ClientError
 
 import logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+
+def get_logger(
+    level: int = logging.INFO,
+    format: str = "%(asctime)s [%(filename)s] [%(funcName)s] [%(levelname)s] %(message)s",
+    logging_file_handler: str = "/tmp/filename.log",
+):
+    handlers = [logging.FileHandler(logging_file_handler), logging.StreamHandler()]
+    logging.basicConfig(level=level, format=format, handlers=handlers)
+    logger = logging.getLogger()
+    logger.setLevel(level)
+    return logger
+
+
+# Logger Instantiation
+logger = get_logger()
+
 # Api Call Restrictions
 period_in_seconds = 60
 calls_per_period = 30
@@ -104,7 +118,7 @@ def write_metadata_backup_file_to_s3(
     object_name = f"{prefix}/metadata.json"
     s3 = boto3_session.resource("s3")
     s3.Bucket(bucket_name).put_object(Key=object_name, Body=metadata_json)
-    logger.info("metadata written in s3 bucket")
+    logger.info(f"Metadata file written to s3://{bucket_name}/{object_name}")
 
 
 def get_current_date_formatted() -> str:
@@ -182,9 +196,11 @@ def download_repos(
                 bucket_name,
                 boto3_session,
             )
-            logger.info(f"repository: {repo_name}, written in S3 bucket")
+            logger.info(
+                f"File {repo_name} was written to s3://{bucket_name}/{bucket_prefix}."
+            )
             count_repos_to_write = len(metadata) - idx - 1
-            logger.info(f"{count_repos_to_write} repositories to finish")
+            logger.info(f"{count_repos_to_write} repositories yet to be uploaded.")
         except requests.exceptions.HTTPError as error_:
             raise error_
         except:
