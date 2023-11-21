@@ -6,6 +6,9 @@ from datetime import date
 import boto3
 from botocore.exceptions import ClientError
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
 # Api Call Restrictions
 period_in_seconds = 60
 calls_per_period = 30
@@ -100,6 +103,8 @@ def write_metadata_backup_file_to_s3(
     object_name = f"{prefix}/metadata.json"
     s3 = boto3_session.resource("s3")
     s3.Bucket(bucket_name).put_object(Key=object_name, Body=metadata_json)
+    logger = logging.getLogger()
+    logger.info("metadata written in s3 bucket")
 
 
 def get_current_date_formatted() -> str:
@@ -161,7 +166,8 @@ def download_repos(
     }
 
     full_names = [(repo["owner"], repo["name"]) for repo in metadata]
-
+    count_repos_to_write = len(full_names)
+    logger = logging.getLogger()
     for owner, repo_name in full_names:
         url = f"https://api.github.com/repos/{owner}/{repo_name}/{ext}ball/{ref}"
         response = get_url(url, headers=headers)
@@ -177,6 +183,9 @@ def download_repos(
                 bucket_name,
                 boto3_session,
             )
+            logger.info(f"repository: {repo_name}, written in S3 bucket")
+            count_repos_to_write = count_repos_to_write - 1
+            logger.info(f"{count_repos_to_write} repositories to finish")
         except requests.exceptions.HTTPError as error_:
             raise error_
         except:
