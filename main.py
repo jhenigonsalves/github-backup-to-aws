@@ -9,6 +9,7 @@ from botocore.exceptions import ClientError
 import logging
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
 # Api Call Restrictions
 period_in_seconds = 60
 calls_per_period = 30
@@ -103,7 +104,6 @@ def write_metadata_backup_file_to_s3(
     object_name = f"{prefix}/metadata.json"
     s3 = boto3_session.resource("s3")
     s3.Bucket(bucket_name).put_object(Key=object_name, Body=metadata_json)
-    logger = logging.getLogger()
     logger.info("metadata written in s3 bucket")
 
 
@@ -165,10 +165,9 @@ def download_repos(
         "Accept": "application/vnd.github.v3+json",
     }
 
-    full_names = [(repo["owner"], repo["name"]) for repo in metadata]
-    count_repos_to_write = len(full_names)
-    logger = logging.getLogger()
-    for owner, repo_name in full_names:
+    for idx, repo in enumerate(metadata):
+        owner = repo["owner"]
+        repo_name = repo["name"]
         url = f"https://api.github.com/repos/{owner}/{repo_name}/{ext}ball/{ref}"
         response = get_url(url, headers=headers)
         try:
@@ -184,7 +183,7 @@ def download_repos(
                 boto3_session,
             )
             logger.info(f"repository: {repo_name}, written in S3 bucket")
-            count_repos_to_write = count_repos_to_write - 1
+            count_repos_to_write = len(metadata) - idx - 1
             logger.info(f"{count_repos_to_write} repositories to finish")
         except requests.exceptions.HTTPError as error_:
             raise error_
