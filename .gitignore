@@ -1,5 +1,7 @@
 .vscode
-
+# lambda layer files
+python/
+python.zip
 #temporary test files
 repos
 *.ipynb
