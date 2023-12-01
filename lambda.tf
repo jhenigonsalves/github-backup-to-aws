@@ -1,3 +1,16 @@
+resource "aws_lambda_layer_version" "github_backup_layer" {
+  s3_bucket  = "public-objects-31415"
+  s3_key     = "lambda-layer/python.zip"
+  layer_name = "github_backup_layer"
+
+  compatible_runtimes = [
+    "python3.9",
+    "python3.10",
+    "python3.11"
+  ]
+}
+
+
 resource "aws_lambda_function" "github_backup" {
   filename         = local.lambda_github_backup.zip_file
   function_name    = "github_backup"
