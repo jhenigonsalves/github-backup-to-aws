@@ -1,7 +1,7 @@
 resource "aws_lambda_function" "github_backup" {
   filename         = local.lambda_github_backup.zip_file
   function_name    = "github_backup"
-  role             = aws_iam_role.realtime_lambda_role.arn
+  role             = aws_iam_role.github_backup_lambda_function_role.arn
   handler          = "lambda_function.lambda_handler"
   timeout          = var.lambda_timeout
   memory_size      = var.memory_size
@@ -11,6 +11,6 @@ resource "aws_lambda_function" "github_backup" {
   layers           = [aws_lambda_layer_version.psycopg2_pandas_layer.arn]
 
   depends_on = [
-    aws_iam_role.realtime_lambda_role
+    aws_iam_role.github_backup_lambda_function_role
   ]
 }
