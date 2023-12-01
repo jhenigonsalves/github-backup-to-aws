@@ -3,11 +3,7 @@ resource "aws_lambda_layer_version" "github_backup_layer" {
   s3_key     = "lambda-layer/python.zip"
   layer_name = "github_backup_layer"
 
-  compatible_runtimes = [
-    "python3.9",
-    "python3.10",
-    "python3.11"
-  ]
+  compatible_runtimes = [var.runtime]
 }
 
 
@@ -21,7 +17,7 @@ resource "aws_lambda_function" "github_backup" {
   package_type     = var.package_type
   source_code_hash = data.archive_file.lambda_encounter_type_general_zip.output_base64sha256
   runtime          = var.runtime
-  layers           = [aws_lambda_layer_version.github_backup_layer]
+  layers           = [aws_lambda_layer_version.github_backup_layer.arn]
 
   depends_on = [
     aws_iam_role.github_backup_lambda_function_role

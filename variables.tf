@@ -14,7 +14,7 @@ variable "memory_size"{
 
 variable "package_type"{
     type = string
-    default = "zip"
+    default = "Zip"
 
 }
 
