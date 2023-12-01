@@ -21,7 +21,7 @@ resource "aws_lambda_function" "github_backup" {
   package_type     = var.package_type
   source_code_hash = data.archive_file.lambda_encounter_type_general_zip.output_base64sha256
   runtime          = var.runtime
-  layers           = [aws_lambda_layer_version.psycopg2_pandas_layer.arn]
+  layers           = [aws_lambda_layer_version.github_backup_layer]
 
   depends_on = [
     aws_iam_role.github_backup_lambda_function_role
