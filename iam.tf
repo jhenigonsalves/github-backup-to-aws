@@ -68,3 +68,39 @@ resource "aws_iam_role" "github_backup_lambda_function_role" {
     })
   }
 }
+
+
+resource "aws_iam_role" "scheduler_invoke_lambda_role" {
+  name = "scheduler_invoke_lambda_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "scheduler.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  inline_policy {
+    name = "allow_invoke_lambda"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Sid : "VisualEditor0",
+          Action = [
+            "lambda:InvokeFunction"
+          ],
+          Effect   = "Allow",
+          Resource = "*"
+        },
+      ]
+    })
+  }
+}
