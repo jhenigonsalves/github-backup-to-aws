@@ -31,7 +31,7 @@ resource "aws_iam_role" "github_backup_lambda_function_role" {
             "s3:GetBucketPolicy"
           ],
           Effect   = "Allow",
-          Resource = "arn:aws:s3:::jheni-github-backup-bucket/*"
+          Resource = "arn:aws:s3:::${local.bucket_backup_name}/*"
         },
         {
           Sid : "VisualEditor1",
