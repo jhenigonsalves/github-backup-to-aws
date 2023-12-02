@@ -1,5 +1,6 @@
 resource "aws_s3_bucket" "github_backup" {
-  bucket = "jheni-github-backup-bucket"
+  bucket        = local.bucket_backup_name
+  force_destroy = true
 }
 
 
