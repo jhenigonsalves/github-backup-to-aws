@@ -5,7 +5,7 @@ data "archive_file" "lambda_github_backup_zip" {
 }
 
 data "aws_secretsmanager_secret" "github_backup" {
-  arn = "arn:aws:secretsmanager:us-east-1:210242717093:secret:prod/github-backup-u7Ivlh"
+  arn = local.backup_secret_arn
 }
 
 data "aws_secretsmanager_secret_version" "backup_current" {

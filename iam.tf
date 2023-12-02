@@ -56,7 +56,7 @@ resource "aws_iam_role" "github_backup_lambda_function_role" {
             "secretsmanager:DescribeSecret"
           ],
           Effect   = "Allow",
-          Resource = "arn:aws:secretsmanager:us-east-1:210242717093:secret:prod/github-backup-u7Ivlh"
+          Resource = local.backup_secret_arn
         },
         {
           Sid : "VisualEditor1",
