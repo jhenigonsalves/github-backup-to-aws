@@ -66,8 +66,10 @@ def test_guru_client_check_for_response_errors(p_get_response):
   * The first one is the name of the bucket where you will tell boto3 to upload files, the second variable is the name of the prefix inside the bucket where you should  put the files. As an example, lets say you want to upload a file called `file1.zip` on a bucket called `my-awsome-bucket-01` with prefix `myprefix`, the file will be uploaded as `my-awsome-bucket-01/myprefix/file1.zip`.
 * [x] The objects uploaded to the bucket will need to be preceeded by a prefix of the current date in format `YYYY-MM-DD`. So going back to the example, lets say I want to upload two files, `f1.zip` and `f2.zip` on a bucket called `my-awsome-bucket-01` with prefix `myprefix`, the result objects should then be `my-awsome-bucket-01/myprefix/2023-11-01/f1.zip` and `my-awsome-bucket-01/myprefix/2023-11-01/f2.zip`. Remove all necessary code logic/functions in place to achieve this goal, as well as fixing the tests that will break along the way!
 
-# Step 2.22
-* Once `Step 2.21` is done, you will refactor your code to use [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/). Instead of passing in values as environment variables, we will use boto3 to call `"secretsmanager"` and fetch the secret strings we need to pass in to the `download_repos` function. All variables we are currently reading through `os.environ` will instead be fetched by boto3 to a secret in secrets manager. Before that, you will need to go to your AWS Account and create a Secret there with the values. An example of a call to Secrets Manager using boto3 follows:
+# Step 2.22 - DONE
+
+* [x] Once `Step 2.21` is done, you will refactor your code to use [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/). Instead of passing in values as environment variables, we will use boto3 to call `"secretsmanager"` and fetch the secret strings we need to pass in to the `download_repos` function. All variables we are currently reading through `os.environ` will instead be fetched by boto3 to a secret in secrets manager. Before that, you will need to go to your AWS Account and create a Secret there with the values. An example of a call to Secrets Manager using boto3 follows:
+
 ```python
 import boto3
 
@@ -77,16 +79,20 @@ get_secret_value_response = self.client.get_secret_value(SecretId=secret_name)
 
 # Step 2.3
 
-* Once `2.2` is Done, create a lambda function on AWS Console with that logic and test it to see if it works. The Lambda needs an [IAM Role](https://docs.aws.amazon.com/lambda/latest/dg/lambda-intro-execution-role.html) to run. After making it work, erase the lambda and the IAM Role created.
+* [X] Once `2.2` is Done, create a lambda function on AWS Console with that logic and test it to see if it works.
+* [X] The Lambda needs an [IAM Role](https://docs.aws.amazon.com/lambda/latest/dg/lambda-intro-execution-role.html) to run.
+* [X] After making it work, erase the lambda and the IAM Role created.
 
 # Step 2.4
 
 * Once `2.3` is Done, you are going to recreate all the pieces of infrastructure necessary for this project via Terraform. You project MUST have the following terraform resources defined:
- * One [aws_s3_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) to store the backups.
-  * One [aws_lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) to run the code of your python script. [This example](https://github.com/wesleyjr01/starday-data-lake/blob/master/aws-data-lake/modules/lambda/copy/main.tf) might help you.
-  * One [aws_cloudwatch_log_group] to log your lambda runtime.
-  * One [aws_scheduler_schedule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/scheduler_schedule) as a Cron-based scheduler to run your lambda Once a Month.
-  * One [aws_iam_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) as the Lambda Execution Role. [This example](https://github.com/wesleyjr01/starday-data-lake/blob/master/aws-data-lake/modules/lambda/copy/iam.tf) might help you.
+* [x] One [aws_s3_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) to store the backups.
+* [x] One [aws_lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) to run the code of your python script. [This example](https://github.com/wesleyjr01/starday-data-lake/blob/master/aws-data-lake/modules/lambda/copy/main.tf) might help you.
+* [x] One [aws_cloudwatch_log_group] to log your lambda runtime.
+* [x] Add bucket lifecycle policy to automatically move all bucket files older than 3 months to glacier instant retrieval
+* One [aws_scheduler_schedule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/scheduler_schedule) as a Cron-based scheduler to run your lambda Once a Month.
+* [x] One [aws_iam_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) as the Lambda Execution Role. [This example](https://github.com/wesleyjr01/starday-data-lake/blob/master/aws-data-lake/modules/lambda/copy/iam.tf) might help you.
+* [x] One [aws_lambda_layer_version](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_layer_version) as the lambda layer .
 
 # Step 3 - DONE/NOT_NECESSARY
 

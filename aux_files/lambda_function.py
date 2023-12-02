@@ -237,7 +237,7 @@ def get_secret(
         raise e
 
 
-if __name__ == "__main__":
+def lambda_handler(event, context):
     boto3_session = boto3.Session()
     secret_dict = get_secret(boto3_session, "prod/github-backup")
     access_token = secret_dict["TOKEN_GITHUB"]
@@ -252,3 +252,6 @@ if __name__ == "__main__":
         bucket_name,
         boto3_session,
     )
+    return {
+        "statusCode": 200,
+    }
