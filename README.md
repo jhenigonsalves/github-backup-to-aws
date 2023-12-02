@@ -88,7 +88,8 @@ get_secret_value_response = self.client.get_secret_value(SecretId=secret_name)
 * Once `2.3` is Done, you are going to recreate all the pieces of infrastructure necessary for this project via Terraform. You project MUST have the following terraform resources defined:
 * [x] One [aws_s3_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) to store the backups.
 * [x] One [aws_lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) to run the code of your python script. [This example](https://github.com/wesleyjr01/starday-data-lake/blob/master/aws-data-lake/modules/lambda/copy/main.tf) might help you.
-* One [aws_cloudwatch_log_group] to log your lambda runtime.
+* [x] One [aws_cloudwatch_log_group] to log your lambda runtime.
+* [x] Add bucket lifecycle policy to automatically move all bucket files older than 3 months to glacier instant retrieval
 * One [aws_scheduler_schedule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/scheduler_schedule) as a Cron-based scheduler to run your lambda Once a Month.
 * [x] One [aws_iam_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) as the Lambda Execution Role. [This example](https://github.com/wesleyjr01/starday-data-lake/blob/master/aws-data-lake/modules/lambda/copy/iam.tf) might help you.
 * [x] One [aws_lambda_layer_version](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_layer_version) as the lambda layer .
