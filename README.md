@@ -66,7 +66,16 @@ The overall architecture is as follows:
 
 ## Why a Lambda Layer is necessary
 
-  Describe that was necessary to use rate limit not to overload Githubs Public API.
+GitHub limits the number of requests that can be done whithin a specific amount of time. There are 3 kinds of ratelimits of interest to us:
 
-* Describe your unit tests for logic code
-* Describe CI/CD with Github Actions
+1. The primary rate limit for authenticated users, which is 5000 requests per hour.
+2. The primary rate limit for GITIHUB_TOKEN in GitHub Actions, which is 1000 requests per hour.
+3. The secondary rate limit: *Make too many requests per minute. No more than 90 seconds of CPU time per 60 seconds of real time is allowed.*
+  
+If you want to know more about then you can access the [documentation](https://docs.github.com/pt/rest/overview/rate-limits-for-the-rest-api?apiVersion=2022-11-28)
+
+For this reason wass necessary to use *limits* and  *sleep_and_retry* from the *ratelimit* python's library. To garantee that no more than 30 calls are made per minute. As *ratelimit* and even *requests* are not native from python, it was necessary to create a layer that contains this dependencies.
+
+## Unit Tests
+
+## Describe CI/CD with Github Actions
