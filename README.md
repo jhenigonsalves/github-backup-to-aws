@@ -2,10 +2,10 @@
 
 GitHub Backup to AWS is an automated solution designed to back up all GitHub repositories from an account to an AWS S3 bucket. The project uses Terraform for infrastructure provisioning, Python for script execution, and GitHub Actions for continuous integration and deployment. The architecture ensures a secure and efficient backup process.
 
-## Get Started with the Project
+## Get Started - How to Use
 
 1. Fork Github Project
-1. Add AWS credentials as a Secret on Github Project. The credentials must have enough privileges to make the deployment. So it need to be able to:
+1. Add AWS IAM credentials as Secrets on the forked Github Project (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`). The credentials must have enough privileges to make the deployment. So it need to be able to:
    * Read/Write to terraform bucket
    * Read the user created Secret from AWS Secrets Manager
    * Create AWS Lambda Functions
@@ -16,14 +16,11 @@ GitHub Backup to AWS is an automated solution designed to back up all GitHub rep
    * Create AWS EventBridge Scheduler
 
 1. Create a bucket manually on AWS Account to hold the Terraform State. Turn on Versioning for this bucket and leave everything private.
-1. Modify backup.tf: add your terraform state bucket at line 4
+1. Modify file **backup.tf**: add your terraform state bucket at line 4
 
 1. Create a Secret on AWS Secrets Manager (explain what fields must be there)
 
-   * The secret must be called:
-      <div style='text-align: center;'>
-        prod/github-backup/
-      </div>
+   * The secret must be called: **prod/github-backup**
 
    * The secret must contain the pairs key/value:
   
@@ -34,9 +31,9 @@ GitHub Backup to AWS is an automated solution designed to back up all GitHub rep
     | BACKUP_S3_BUCKET | my-backup-s3-bucket | S3 bucket name |
     | BACKUP_S3_PREFIX| 'my-prefix' | the name of the prefix inside the bucket where you should put the files
 
-1. Modify locals.tf: add your secret arn at line 9
+1. Modify **locals.tf**: add your AWS Secrets Manager - Secret ARN at line 9
 
-1. Commit and push the modifications. After a push/merge to the master branch the deploy will occur automatically.
+1. Commit and push the modifications. After a push/merge to the master branch the deploy will occur automatically via GithubActions (the template `terraform-apply` will be triggered).
 
 ## A Closer Look at Terraform's Provisioned Resources
 
@@ -66,7 +63,7 @@ The overall architecture is as follows:
 
 ## Why a Lambda Layer is necessary
 
-GitHub limits the number of requests that can be done whithin a specific amount of time. There are 3 kinds of ratelimits of interest to us:
+GitHub's public API limits the number of requests that can be done whithin a time window. There are 3 kinds of ratelimits of interest to us:
 
 1. The primary rate limit for authenticated users, which is 5000 requests per hour.
 2. The primary rate limit for GITIHUB_TOKEN in GitHub Actions, which is 1000 requests per hour.
@@ -74,7 +71,7 @@ GitHub limits the number of requests that can be done whithin a specific amount 
   
 If you want to know more about then you can access the [documentation](https://docs.github.com/pt/rest/overview/rate-limits-for-the-rest-api?apiVersion=2022-11-28)
 
-For this reason wass necessary to use *limits* and  *sleep_and_retry* from the *ratelimit* python's library. To garantee that no more than 30 calls are made per minute. As *ratelimit* and even *requests* are not native from python, it was necessary to create a layer that contains this dependencies.
+For this reason wass necessary to use *limits* and  *sleep_and_retry* from the *ratelimit* python's library to garantee that no more than 30 calls are made per minute. As *ratelimit* and even *requests* are not native from AWS Lambda Runtime, it was necessary to create a layer that contains those dependencies.
 
 ## Unit Tests
 
