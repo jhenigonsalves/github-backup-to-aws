@@ -1,4 +1,6 @@
-from unittest.mock import patch, Mock
+import pytest
+from unittest.mock import patch, MagicMock, Mock
+from botocore.exceptions import ClientError
 
 from main import get_secret
 
@@ -23,3 +25,16 @@ def test_get_secret_return_values(mock_session):
     assert secrets["BACKUP_ONLY_OWNER_REPOS"] == "False"
     assert secrets["BACKUP_S3_BUCKET"] == "foo_bucket_name"
     assert secrets["BACKUP_S3_PREFIX"] == "foo_bucket_prefox"
+
+
+@patch("boto3.Session")
+def test_get_secret_raise_client_error(mock_session):
+    mock_client = Mock()
+    mock_client.get_secret_value.side_effect = ClientError(
+        {"Error": {"Code": "MockError"}}, "operation_name"
+    )
+
+    mock_session.client.return_value = mock_client
+
+    with pytest.raises(ClientError):
+        get_secret(session=mock_session, secret_name="")
