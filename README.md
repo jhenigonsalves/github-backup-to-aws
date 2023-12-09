@@ -78,3 +78,8 @@ For this reason wass necessary to use *limits* and  *sleep_and_retry* from the *
 Almost all the python statements were tested, except the calls pf *put_object()* at *s3.Bucket()*. The coverage was measured using [coverage.py](https://coverage.readthedocs.io/en/7.3.2/), and it reached a value of 84%
 
 ## Describe CI/CD with Github Actions
+
+GitHub Actions was used to deploy automatically our infrascture. Every *pull_request* to *master* branch triggers a *Terraform Plan* and the test suit with *pytest*. On *merges* to *master* a *Terraform Apply* is triggered.
+
+The overall architecture looks as follows
+![architecture](diagrams/gitflow-simplified.png)
