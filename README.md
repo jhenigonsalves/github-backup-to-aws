@@ -75,4 +75,6 @@ For this reason wass necessary to use *limits* and  *sleep_and_retry* from the *
 
 ## Unit Tests
 
+Almost all the python statements were tested, except the calls pf *put_object()* at *s3.Bucket()*. The coverage was measured using [coverage.py](https://coverage.readthedocs.io/en/7.3.2/), and it reached a value of 84%
+
 ## Describe CI/CD with Github Actions
